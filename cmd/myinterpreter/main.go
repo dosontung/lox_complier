@@ -33,7 +33,7 @@ func main() {
 	if len(fileContents) > 0 {
 		for _, charByte := range fileContents {
 			if charByte == '(' {
-				fmt.Println("LEFT_PAREN (  null")
+				fmt.Println("LEFT_PAREN ( null")
 			} else if charByte == ')' {
 				fmt.Println("RIGHT_PAREN ) null")
 			}
