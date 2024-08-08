@@ -64,6 +64,8 @@ func main() {
 
 			case '#':
 				fmt.Printf("[line %d] Error: Unexpected character: #\n", line_idx)
+			case '@':
+				fmt.Printf("[line %d] Error: Unexpected character: @\n", line_idx)
 			default:
 				os.Exit(65)
 			}
