@@ -31,7 +31,6 @@ func main() {
 		os.Exit(1)
 	}
 	line_idx := 1
-	errCode := 0
 	var builder strings.Builder
 	if len(fileContents) > 0 {
 		for _, charByte := range fileContents {
@@ -62,17 +61,15 @@ func main() {
 				line_idx++
 			case '$':
 				fmt.Printf("[line %d] Error: Unexpected character: $\n", line_idx)
-				errCode = 65
 
 			case '#':
 				fmt.Printf("[line %d] Error: Unexpected character: #\n", line_idx)
-				errCode = 65
-
+			default:
+				os.Exit(65)
 			}
 		}
 		builder.WriteString("EOF  null\n")
 		fmt.Print(builder.String())
-		os.Exit(errCode)
 	} else {
 
 		fmt.Println("EOF  null") // Placeholder, remove this line when implementing the scanner
