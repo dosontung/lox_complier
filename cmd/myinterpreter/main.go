@@ -60,16 +60,18 @@ func main() {
 				builder.WriteString("SLASH / null\n")
 			case '\n':
 				line_idx++
-			case '$':
-				fmt.Fprintf(os.Stderr, "[line %d] Error: Unexpected character: $\n", line_idx)
-				errCode = 65
-			case '#':
-				fmt.Fprintf(os.Stderr, "[line %d] Error: Unexpected character: #\n", line_idx)
-				errCode = 65
-			case '@':
-				fmt.Fprintf(os.Stderr, "[line %d] Error: Unexpected character: @\n", line_idx)
-				errCode = 65
+			//case '$':
+			//	fmt.Fprintf(os.Stderr, "[line %d] Error: Unexpected character: $\n", line_idx)
+			//	errCode = 65
+			//case '#':
+			//	fmt.Fprintf(os.Stderr, "[line %d] Error: Unexpected character: #\n", line_idx)
+			//	errCode = 65
+			//case '@':
+			//	fmt.Fprintf(os.Stderr, "[line %d] Error: Unexpected character: @\n", line_idx)
+			//	errCode = 65
 			default:
+				fmt.Fprintf(os.Stderr, "[line %d] Error: Unexpected character: %c\n", line_idx, charByte)
+				errCode = 65
 			}
 		}
 		builder.WriteString("EOF  null\n")
