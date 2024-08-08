@@ -69,7 +69,7 @@ func main() {
 		}
 		builder.WriteString("EOF  null\n")
 		fmt.Print(builder.String())
-
+		os.Exit(65)
 	} else {
 
 		fmt.Println("EOF  null") // Placeholder, remove this line when implementing the scanner
