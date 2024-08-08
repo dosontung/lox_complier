@@ -74,8 +74,8 @@ func main() {
 				os.Exit(65)
 			}
 		}
-		builder.WriteString("EOF  null\n")
 		fmt.Print(builder.String())
+		builder.WriteString("EOF  null\n")
 		os.Exit(errCode)
 	} else {
 
