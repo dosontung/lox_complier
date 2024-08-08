@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 )
 
 func main() {
@@ -29,35 +30,45 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Error reading file: %v\n", err)
 		os.Exit(1)
 	}
-
+	line_idx := 1
+	var builder strings.Builder
 	if len(fileContents) > 0 {
 		for _, charByte := range fileContents {
 			switch charByte {
 			case '(':
-				fmt.Println("LEFT_PAREN ( null")
+				builder.WriteString("LEFT_PAREN ( null\n")
 			case ')':
-				fmt.Println("RIGHT_PAREN ) null")
+				builder.WriteString("RIGHT_PAREN ) null\n")
 			case '{':
-				fmt.Println("LEFT_BRACE { null")
+				builder.WriteString("LEFT_BRACE { null\n")
 			case '}':
-				fmt.Println("RIGHT_BRACE } null")
+				builder.WriteString("RIGHT_BRACE } null\n")
 			case '*':
-				fmt.Println("STAR * null")
+				builder.WriteString("STAR * null\n")
 			case '.':
-				fmt.Println("DOT . null")
+				builder.WriteString("DOT . null\n")
 			case ',':
-				fmt.Println("COMMA , null")
+				builder.WriteString("COMMA , null\n")
 			case '+':
-				fmt.Println("PLUS + null")
+				builder.WriteString("PLUS + null\n")
 			case '-':
-				fmt.Println("MINUS - null")
+				builder.WriteString("MINUS - null\n")
 			case ';':
-				fmt.Println("SEMICOLON ; null")
+				builder.WriteString("SEMICOLON ; null\n")
 			case '/':
-				fmt.Println("SLASH / null")
+				builder.WriteString("SLASH / null\n")
+			case '\n':
+				line_idx++
+			case '$':
+				fmt.Printf("[line %d] Error: Unexpected character: $\n", line_idx)
+
+			case '#':
+				fmt.Printf("[line %d] Error: Unexpected character: #\n", line_idx)
+
 			}
 		}
-		fmt.Println("EOF  null")
+		builder.WriteString("EOF  null\n")
+		fmt.Print(builder.String())
 
 	} else {
 
