@@ -61,6 +61,6 @@ func main() {
 
 	} else {
 
-		//fmt.Println("EOF  null") // Placeholder, remove this line when implementing the scanner
+		fmt.Println("EOF  null") // Placeholder, remove this line when implementing the scanner
 	}
 }
