@@ -49,6 +49,12 @@ func main() {
 				fmt.Println("COMMA , null")
 			case '+':
 				fmt.Println("PLUS + null")
+			case '-':
+				fmt.Println("MINUS - null")
+			case ';':
+				fmt.Println("SEMICOLON ; null")
+			case '/':
+				fmt.Println("SLASH / null")
 			}
 		}
 		fmt.Println("EOF  null")
