@@ -61,13 +61,13 @@ func main() {
 			case '\n':
 				line_idx++
 			case '$':
-				fmt.Printf("[line %d] Error: Unexpected character: $\n", line_idx)
+				fmt.Fprintf(os.Stderr, "[line %d] Error: Unexpected character: $\n", line_idx)
 				errCode = 65
 			case '#':
-				fmt.Printf("[line %d] Error: Unexpected character: #\n", line_idx)
+				fmt.Fprintf(os.Stderr, "[line %d] Error: Unexpected character: #\n", line_idx)
 				errCode = 65
 			case '@':
-				fmt.Printf("[line %d] Error: Unexpected character: @\n", line_idx)
+				fmt.Fprintf(os.Stderr, "[line %d] Error: Unexpected character: @\n", line_idx)
 				errCode = 65
 				os.Exit(65)
 			default:
