@@ -32,20 +32,29 @@ func main() {
 
 	if len(fileContents) > 0 {
 		for _, charByte := range fileContents {
-			if charByte == '(' {
+			switch charByte {
+			case '(':
 				fmt.Println("LEFT_PAREN ( null")
-			} else if charByte == ')' {
+			case ')':
 				fmt.Println("RIGHT_PAREN ) null")
-			} else if charByte == '{' {
+			case '{':
 				fmt.Println("LEFT_BRACE { null")
-			} else if charByte == '}' {
+			case '}':
 				fmt.Println("RIGHT_BRACE } null")
+			case '*':
+				fmt.Println("STAR * null")
+			case '.':
+				fmt.Println("DOT . null")
+			case ',':
+				fmt.Println("COMMA , null")
+			case '+':
+				fmt.Println("PLUS + null")
 			}
 		}
 		fmt.Println("EOF  null")
 
 	} else {
 
-		fmt.Println("EOF  null") // Placeholder, remove this line when implementing the scanner
+		//fmt.Println("EOF  null") // Placeholder, remove this line when implementing the scanner
 	}
 }
