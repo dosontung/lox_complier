@@ -67,7 +67,7 @@ func main() {
 				fmt.Printf("[line %d] Error: Unexpected character: #\n", line_idx)
 				errCode = 65
 			case '@':
-				fmt.Printf("[line %d] Error: Unexpected character: #\n", line_idx)
+				fmt.Printf("[line %d] Error: Unexpected character: @\n", line_idx)
 				errCode = 65
 			default:
 				os.Exit(65)
