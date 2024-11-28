@@ -15,7 +15,7 @@ func (l *LogError) writeError(lineIdx int, message string) {
 
 	// Construct the error message
 	l.sb.WriteString("[line ")
-	l.sb.WriteString(fmt.Sprintf("%d ] Error:", lineIdx))
+	l.sb.WriteString(fmt.Sprintf("%d] Error: ", lineIdx))
 	l.sb.WriteString(fmt.Sprintf("%s\n", message))
 }
 
