@@ -100,6 +100,10 @@ func main() {
 				} else {
 					builder.WriteString("GREATER > null\n")
 				}
+			case ' ':
+				continue
+			case '\t':
+				continue
 			case '\n':
 				line_idx++
 			//case '$':
