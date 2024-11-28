@@ -39,6 +39,7 @@ func main() {
 			charByte := fileContents[idx]
 			if isComment {
 				if charByte == '\n' {
+					line_idx++
 					isComment = false
 				}
 				continue
