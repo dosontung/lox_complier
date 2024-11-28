@@ -142,7 +142,9 @@ func main() {
 		}
 		builder.WriteString("EOF  null\n")
 		fmt.Print(builder.String())
-		os.Exit(errCode)
+		if len(logError.sb.String()) > 0 {
+			fmt.Fprintf(os.Stderr, logError.sb.String())
+		}
 	} else {
 		fmt.Println("EOF  null") // Placeholder, remove this line when implementing the scanner
 	}
