@@ -107,7 +107,7 @@ func main() {
 			case '\t':
 				continue
 			case '"':
-				err, str, new_idx := getString(idx, fileContents)
+				err, str, new_idx := getString(idx+1, fileContents)
 				idx = new_idx
 				if err != nil {
 					fmt.Fprintf(os.Stderr, "[line %d] Error: Unterminated string.\n", line_idx)
