@@ -137,7 +137,7 @@ func main() {
 					if !isInteger(number) {
 						builder.WriteString(fmt.Sprintf("NUMBER %f %f\n", number, number))
 					} else {
-						builder.WriteString(fmt.Sprintf("NUMBER %d.0 %d.0\n", int64(number), int64(number)))
+						builder.WriteString(fmt.Sprintf("NUMBER %d %d.0\n", int64(number), int64(number)))
 					}
 
 				}
