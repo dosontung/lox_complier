@@ -131,11 +131,11 @@ func main() {
 					builder.WriteString(fmt.Sprintf("STRING \"%s\" %s\n", str, str))
 				}
 			case charByte >= '0' && charByte <= '9':
-				err, number, newIdx := getNumber(idx, fileContents)
+				err, number, precision, newIdx := getNumber(idx, fileContents)
 				idx = newIdx
 				if err == nil {
 					if !isInteger(number) {
-						builder.WriteString(fmt.Sprintf("NUMBER %f %f\n", number, number))
+						builder.WriteString(fmt.Sprintf("NUMBER %*f %*f\n", precision, number, precision, number))
 					} else {
 						builder.WriteString(fmt.Sprintf("NUMBER %d %d.0\n", int64(number), int64(number)))
 					}
@@ -184,11 +184,13 @@ func getString(idx int, fileContents []byte) (error, string, int) {
 	return nil, sb.String(), i
 }
 
-func getNumber(idx int, fileContents []byte) (error, float64, int) {
+func getNumber(idx int, fileContents []byte) (error, float64, int, int) {
 	i := idx
+	precision := 0
 	for i = idx; i < len(fileContents); i++ {
 		charByte := fileContents[i]
 		if charByte == '.' {
+			precision = i
 			continue
 		}
 		if charByte < '0' || charByte > '9' {
@@ -197,8 +199,8 @@ func getNumber(idx int, fileContents []byte) (error, float64, int) {
 	}
 	floatValue, err := strconv.ParseFloat(string(fileContents[idx:i]), 64)
 	if err != nil {
-		return err, floatValue, i
+		return err, floatValue, i - precision - 1, i
 	}
-	return nil, floatValue, i
+	return nil, floatValue, i - precision - 1, i
 
 }
