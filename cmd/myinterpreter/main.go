@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -105,17 +106,19 @@ func main() {
 				continue
 			case '\t':
 				continue
+			case '"':
+				err, str, new_idx := getString(idx, fileContents)
+				idx = new_idx
+				if err != nil {
+					fmt.Fprintf(os.Stderr, "[line %d] Error: Unterminated string.\n", line_idx)
+				} else {
+					builder.WriteString("STRING \"")
+					builder.WriteString(str)
+					builder.WriteString("\" ")
+					builder.WriteString(str)
+				}
 			case '\n':
 				line_idx++
-			//case '$':
-			//	fmt.Fprintf(os.Stderr, "[line %d] Error: Unexpected character: $\n", line_idx)
-			//	errCode = 65
-			//case '#':
-			//	fmt.Fprintf(os.Stderr, "[line %d] Error: Unexpected character: #\n", line_idx)
-			//	errCode = 65
-			//case '@':
-			//	fmt.Fprintf(os.Stderr, "[line %d] Error: Unexpected character: @\n", line_idx)
-			//	errCode = 65
 			default:
 				fmt.Fprintf(os.Stderr, "[line %d] Error: Unexpected character: %c\n", line_idx, charByte)
 				errCode = 65
@@ -125,7 +128,27 @@ func main() {
 		fmt.Print(builder.String())
 		os.Exit(errCode)
 	} else {
-
 		fmt.Println("EOF  null") // Placeholder, remove this line when implementing the scanner
 	}
+}
+
+func getString(idx int, fileContents []byte) (error, string, int) {
+	var sb strings.Builder
+	hasError := true
+	i := idx
+	for i = idx; i < len(fileContents); i++ {
+		if fileContents[i] == '\n' {
+			break
+		}
+		if fileContents[i] == '"' {
+			hasError = false
+			i++
+			break
+		}
+		sb.WriteByte(fileContents[i])
+	}
+	if hasError {
+		return errors.New("Error: Unterminated string."), "", i
+	}
+	return nil, sb.String(), i
 }
