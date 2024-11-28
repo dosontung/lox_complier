@@ -123,6 +123,7 @@ func main() {
 				idx = new_idx
 				if err != nil {
 					logError.writeError(line_idx, "Unterminated string.")
+					idx--
 					//fmt.Fprintf(os.Stderr, "[line %d] Error: Unterminated string.\n", line_idx)
 				} else {
 					builder.WriteString("STRING \"")
@@ -160,7 +161,6 @@ func getString(idx int, fileContents []byte) (error, string, int) {
 		}
 		if fileContents[i] == '"' {
 			hasError = false
-			i++
 			break
 		}
 		sb.WriteByte(fileContents[i])
