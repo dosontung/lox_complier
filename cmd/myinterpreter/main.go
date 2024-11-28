@@ -12,11 +12,11 @@ type LogError struct {
 }
 
 func (l *LogError) writeError(lineIdx int, message string) {
-
 	// Construct the error message
 	l.sb.WriteString("[line ")
 	l.sb.WriteString(fmt.Sprintf("%d] Error: ", lineIdx))
-	l.sb.WriteString(fmt.Sprintf("%s\n", message))
+	l.sb.WriteString(message)
+	l.sb.WriteString("\n")
 }
 
 func main() {
@@ -43,7 +43,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Error reading file: %v\n", err)
 		os.Exit(1)
 	}
-	line_idx := 1
+	lineIdx := 1
 	isComment := false
 	var builder strings.Builder
 	var logError LogError
@@ -52,7 +52,7 @@ func main() {
 			charByte := fileContents[idx]
 			if isComment {
 				if charByte == '\n' {
-					line_idx++
+					lineIdx++
 					isComment = false
 				}
 				continue
@@ -119,10 +119,10 @@ func main() {
 			case '\t':
 				continue
 			case '"':
-				err, str, new_idx := getString(idx+1, fileContents)
-				idx = new_idx
+				err, str, newIdx := getString(idx+1, fileContents)
+				idx = newIdx
 				if err != nil {
-					logError.writeError(line_idx, "Unterminated string.")
+					logError.writeError(lineIdx, "Unterminated string.")
 					idx--
 					//fmt.Fprintf(os.Stderr, "[line %d] Error: Unterminated string.\n", line_idx)
 				} else {
@@ -133,9 +133,9 @@ func main() {
 					builder.WriteString("\n")
 				}
 			case '\n':
-				line_idx++
+				lineIdx++
 			default:
-				logError.writeError(line_idx, fmt.Sprintf("Unexpected character: %c", charByte))
+				logError.writeError(lineIdx, fmt.Sprintf("Unexpected character: %c", charByte))
 				//fmt.Fprintf(os.Stderr, "[line %d] Error: Unexpected character: %c\n", line_idx, charByte)
 			}
 		}
@@ -145,8 +145,8 @@ func main() {
 	} else {
 		fmt.Println("EOF  null") // Placeholder, remove this line when implementing the scanner
 	}
-	if len(logError.sb.String()) > 0 {
-		fmt.Fprintf(os.Stderr, logError.sb.String())
+	if logError.sb.Len() > 0 {
+		fmt.Fprint(os.Stderr, logError.sb.String())
 		os.Exit(65)
 	}
 }
