@@ -132,7 +132,7 @@ func main() {
 				}
 			case charByte >= '0' && charByte <= '9':
 				err, number, precision, newIdx := getNumber(idx, fileContents)
-				idx = newIdx
+				idx = newIdx - 1
 				if err == nil {
 					if !isInteger(number) {
 						builder.WriteString(fmt.Sprintf("NUMBER %.*f %.*f\n", precision, number, precision, number))
