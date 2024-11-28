@@ -7,6 +7,18 @@ import (
 	"strings"
 )
 
+type LogError struct {
+	sb strings.Builder
+}
+
+func (l *LogError) writeError(lineIdx int, message string) {
+
+	// Construct the error message
+	l.sb.WriteString("[line ")
+	l.sb.WriteString(fmt.Sprintf("%d ] Error:", lineIdx))
+	l.sb.WriteString(fmt.Sprintf("%s\n", message))
+}
+
 func main() {
 	// You can use print statements as follows for debugging, they'll be visible when running tests.
 	//fmt.Fprintln(os.Stderr, "Logs from your program will appear here!")
@@ -35,6 +47,7 @@ func main() {
 	errCode := 0
 	isComment := false
 	var builder strings.Builder
+	var logError LogError
 	if len(fileContents) > 0 {
 		for idx := 0; idx < len(fileContents); idx++ {
 			charByte := fileContents[idx]
@@ -110,7 +123,8 @@ func main() {
 				err, str, new_idx := getString(idx+1, fileContents)
 				idx = new_idx
 				if err != nil {
-					fmt.Fprintf(os.Stderr, "[line %d] Error: Unterminated string.\n", line_idx)
+					logError.writeError(line_idx, "Unterminated string.")
+					//fmt.Fprintf(os.Stderr, "[line %d] Error: Unterminated string.\n", line_idx)
 				} else {
 					builder.WriteString("STRING \"")
 					builder.WriteString(str)
@@ -121,7 +135,8 @@ func main() {
 			case '\n':
 				line_idx++
 			default:
-				fmt.Fprintf(os.Stderr, "[line %d] Error: Unexpected character: %c\n", line_idx, charByte)
+				logError.writeError(line_idx, fmt.Sprintf("Unexpected character: %c", charByte))
+				//fmt.Fprintf(os.Stderr, "[line %d] Error: Unexpected character: %c\n", line_idx, charByte)
 				errCode = 65
 			}
 		}
