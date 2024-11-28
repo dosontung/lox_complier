@@ -137,16 +137,17 @@ func main() {
 			default:
 				logError.writeError(line_idx, fmt.Sprintf("Unexpected character: %c", charByte))
 				//fmt.Fprintf(os.Stderr, "[line %d] Error: Unexpected character: %c\n", line_idx, charByte)
-				errCode = 65
 			}
 		}
 		builder.WriteString("EOF  null\n")
 		fmt.Print(builder.String())
-		if len(logError.sb.String()) > 0 {
-			fmt.Fprintf(os.Stderr, logError.sb.String())
-		}
+
 	} else {
 		fmt.Println("EOF  null") // Placeholder, remove this line when implementing the scanner
+	}
+	if len(logError.sb.String()) > 0 {
+		fmt.Fprintf(os.Stderr, logError.sb.String())
+		os.Exit(65)
 	}
 }
 
