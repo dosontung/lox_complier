@@ -61,7 +61,7 @@ func main() {
 				builder.WriteString("SLASH / null\n")
 			case '=':
 				if idx+1 < len(fileContents) && fileContents[idx+1] == '=' {
-					builder.WriteString("EQUAL_EQUAL = null\n")
+					builder.WriteString("EQUAL_EQUAL == null\n")
 					idx++
 				} else {
 					builder.WriteString("EQUAL = null\n")
