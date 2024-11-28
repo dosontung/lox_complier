@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -57,28 +58,28 @@ func main() {
 				}
 				continue
 			}
-			switch charByte {
-			case '(':
+			switch {
+			case charByte == '(':
 				builder.WriteString("LEFT_PAREN ( null\n")
-			case ')':
+			case charByte == ')':
 				builder.WriteString("RIGHT_PAREN ) null\n")
-			case '{':
+			case charByte == '{':
 				builder.WriteString("LEFT_BRACE { null\n")
-			case '}':
+			case charByte == '}':
 				builder.WriteString("RIGHT_BRACE } null\n")
-			case '*':
+			case charByte == '*':
 				builder.WriteString("STAR * null\n")
-			case '.':
+			case charByte == '.':
 				builder.WriteString("DOT . null\n")
-			case ',':
+			case charByte == ',':
 				builder.WriteString("COMMA , null\n")
-			case '+':
+			case charByte == '+':
 				builder.WriteString("PLUS + null\n")
-			case '-':
+			case charByte == '-':
 				builder.WriteString("MINUS - null\n")
-			case ';':
+			case charByte == ';':
 				builder.WriteString("SEMICOLON ; null\n")
-			case '/':
+			case charByte == '/':
 				if idx+1 < len(fileContents) && fileContents[idx+1] == '/' {
 					isComment = true
 					idx++
@@ -86,39 +87,39 @@ func main() {
 					builder.WriteString("SLASH / null\n")
 				}
 
-			case '=':
+			case charByte == '=':
 				if idx+1 < len(fileContents) && fileContents[idx+1] == '=' {
 					builder.WriteString("EQUAL_EQUAL == null\n")
 					idx++
 				} else {
 					builder.WriteString("EQUAL = null\n")
 				}
-			case '!':
+			case charByte == '!':
 				if idx+1 < len(fileContents) && fileContents[idx+1] == '=' {
 					builder.WriteString("BANG_EQUAL != null\n")
 					idx++
 				} else {
 					builder.WriteString("BANG ! null\n")
 				}
-			case '<':
+			case charByte == '<':
 				if idx+1 < len(fileContents) && fileContents[idx+1] == '=' {
 					builder.WriteString("LESS_EQUAL <= null\n")
 					idx++
 				} else {
 					builder.WriteString("LESS < null\n")
 				}
-			case '>':
+			case charByte == '>':
 				if idx+1 < len(fileContents) && fileContents[idx+1] == '=' {
 					builder.WriteString("GREATER_EQUAL >= null\n")
 					idx++
 				} else {
 					builder.WriteString("GREATER > null\n")
 				}
-			case ' ':
+			case charByte == ' ':
 				continue
-			case '\t':
+			case charByte == '\t':
 				continue
-			case '"':
+			case charByte == '"':
 				err, str, newIdx := getString(idx+1, fileContents)
 				idx = newIdx
 				if err != nil {
@@ -126,13 +127,16 @@ func main() {
 					idx--
 					//fmt.Fprintf(os.Stderr, "[line %d] Error: Unterminated string.\n", line_idx)
 				} else {
-					builder.WriteString("STRING \"")
-					builder.WriteString(str)
-					builder.WriteString("\" ")
-					builder.WriteString(str)
-					builder.WriteString("\n")
+					builder.WriteString(fmt.Sprintf("STRING \"%s\" %s\n", str, str))
 				}
-			case '\n':
+			case charByte >= '0' && charByte <= '9':
+				err, number, newIdx := getNumber(idx, fileContents)
+				idx = newIdx
+				if err == nil {
+					builder.WriteString(fmt.Sprintf("NUMBER %f %f\n", number, number))
+				}
+
+			case charByte == '\n':
 				lineIdx++
 			default:
 				logError.writeError(lineIdx, fmt.Sprintf("Unexpected character: %c", charByte))
@@ -169,4 +173,23 @@ func getString(idx int, fileContents []byte) (error, string, int) {
 		return errors.New("Error: Unterminated string."), "", i
 	}
 	return nil, sb.String(), i
+}
+
+func getNumber(idx int, fileContents []byte) (error, float64, int) {
+	i := idx
+	for i = idx; i < len(fileContents); i++ {
+		charByte := fileContents[i]
+		if charByte == '.' {
+			continue
+		}
+		if charByte < '0' || charByte > '9' {
+			break
+		}
+	}
+	floatValue, err := strconv.ParseFloat(string(fileContents[idx:i]), 64)
+	if err != nil {
+		return err, floatValue, i
+	}
+	return nil, floatValue, i
+
 }
