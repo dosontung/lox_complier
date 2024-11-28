@@ -44,7 +44,6 @@ func main() {
 		os.Exit(1)
 	}
 	line_idx := 1
-	errCode := 0
 	isComment := false
 	var builder strings.Builder
 	var logError LogError
