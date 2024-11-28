@@ -34,7 +34,8 @@ func main() {
 	errCode := 0
 	var builder strings.Builder
 	if len(fileContents) > 0 {
-		for _, charByte := range fileContents {
+		for idx := 0; idx < len(fileContents); idx++ {
+			charByte := fileContents[idx]
 			switch charByte {
 			case '(':
 				builder.WriteString("LEFT_PAREN ( null\n")
@@ -58,6 +59,34 @@ func main() {
 				builder.WriteString("SEMICOLON ; null\n")
 			case '/':
 				builder.WriteString("SLASH / null\n")
+			case '=':
+				if idx+1 < len(fileContents) && fileContents[idx+1] == '=' {
+					builder.WriteString("EQUAL_EQUAL = null\n")
+					idx++
+				} else {
+					builder.WriteString("EQUAL = null\n")
+				}
+			case '!':
+				if idx+1 < len(fileContents) && fileContents[idx+1] == '=' {
+					builder.WriteString("BANG_EQUAL != null\n")
+					idx++
+				} else {
+					builder.WriteString("BANG ! null\n")
+				}
+			case '<':
+				if idx+1 < len(fileContents) && fileContents[idx+1] == '=' {
+					builder.WriteString("LESS_EQUAL <= null\n")
+					idx++
+				} else {
+					builder.WriteString("LESS < null\n")
+				}
+			case '>':
+				if idx+1 < len(fileContents) && fileContents[idx+1] == '=' {
+					builder.WriteString("GREATER_EQUAL >= null\n")
+					idx++
+				} else {
+					builder.WriteString("GREATER > null\n")
+				}
 			case '\n':
 				line_idx++
 			//case '$':
