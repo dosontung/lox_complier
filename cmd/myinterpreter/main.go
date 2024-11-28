@@ -116,6 +116,7 @@ func main() {
 					builder.WriteString(str)
 					builder.WriteString("\" ")
 					builder.WriteString(str)
+					builder.WriteString("\n")
 				}
 			case '\n':
 				line_idx++
