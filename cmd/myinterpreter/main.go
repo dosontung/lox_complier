@@ -32,10 +32,17 @@ func main() {
 	}
 	line_idx := 1
 	errCode := 0
+	isComment := false
 	var builder strings.Builder
 	if len(fileContents) > 0 {
 		for idx := 0; idx < len(fileContents); idx++ {
 			charByte := fileContents[idx]
+			if isComment {
+				if charByte == '\n' {
+					isComment = false
+				}
+				continue
+			}
 			switch charByte {
 			case '(':
 				builder.WriteString("LEFT_PAREN ( null\n")
@@ -58,7 +65,13 @@ func main() {
 			case ';':
 				builder.WriteString("SEMICOLON ; null\n")
 			case '/':
-				builder.WriteString("SLASH / null\n")
+				if idx+1 < len(fileContents) && fileContents[idx+1] == '/' {
+					isComment = true
+					idx++
+				} else {
+					builder.WriteString("SLASH / null\n")
+				}
+
 			case '=':
 				if idx+1 < len(fileContents) && fileContents[idx+1] == '=' {
 					builder.WriteString("EQUAL_EQUAL == null\n")
