@@ -134,7 +134,11 @@ func main() {
 				err, number, precision, newIdx := getNumber(idx, fileContents)
 				idx = newIdx
 				if err == nil {
-					builder.WriteString(fmt.Sprintf("NUMBER %.*f %.*f\n", precision, number, precision, number))
+					if !isInteger(number) {
+						builder.WriteString(fmt.Sprintf("NUMBER %.*f %.*f\n", precision, number, precision, number))
+					} else {
+						builder.WriteString(fmt.Sprintf("NUMBER %.*f %.1f\n", precision, number, number))
+					}
 				}
 
 			case charByte == '\n':
