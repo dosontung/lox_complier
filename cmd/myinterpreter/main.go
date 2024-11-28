@@ -193,9 +193,12 @@ func getNumber(idx int, fileContents []byte) (error, float64, int, int) {
 		}
 	}
 	floatValue, err := strconv.ParseFloat(string(fileContents[idx:i]), 64)
-	if err != nil {
-		return err, floatValue, i - precision - 1, i
+	if precision != 0 {
+		precision = i - precision - 1
 	}
-	return nil, floatValue, i - precision - 1, i
+	if err != nil {
+		return err, floatValue, precision, i
+	}
+	return nil, floatValue, precision, i
 
 }
