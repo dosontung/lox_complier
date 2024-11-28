@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"math"
 	"os"
 	"strconv"
 	"strings"
@@ -133,7 +134,12 @@ func main() {
 				err, number, newIdx := getNumber(idx, fileContents)
 				idx = newIdx
 				if err == nil {
-					builder.WriteString(fmt.Sprintf("NUMBER %f %f\n", number, number))
+					if !isInteger(number) {
+						builder.WriteString(fmt.Sprintf("NUMBER %f %f\n", number, number))
+					} else {
+						builder.WriteString(fmt.Sprintf("NUMBER %d.0 %d.0\n", int64(number), int64(number)))
+					}
+
 				}
 
 			case charByte == '\n':
@@ -153,6 +159,9 @@ func main() {
 		fmt.Fprint(os.Stderr, logError.sb.String())
 		os.Exit(65)
 	}
+}
+func isInteger(f float64) bool {
+	return f == math.Trunc(f)
 }
 
 func getString(idx int, fileContents []byte) (error, string, int) {
