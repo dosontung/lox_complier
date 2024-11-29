@@ -219,6 +219,5 @@ func getIdentifier(idx int, fileContents []byte) (string, int) {
 		}
 		break
 	}
-	fmt.Println("Identifier:", string(fileContents[idx:i]))
 	return string(fileContents[idx:i]), i
 }
