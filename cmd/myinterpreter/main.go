@@ -21,6 +21,25 @@ func (l *LogError) writeError(lineIdx int, message string) {
 	l.sb.WriteString("\n")
 }
 
+var reservedWords = map[string]string{
+	"and":    "AND",
+	"class":  "CLASS",
+	"else":   "ELSE",
+	"false":  "FALSE",
+	"for":    "FOR",
+	"fun":    "FUN",
+	"if":     "IF",
+	"nil":    "NIL",
+	"or":     "OR",
+	"print":  "PRINT",
+	"return": "RETURN",
+	"super":  "SUPER",
+	"this":   "THIS",
+	"true":   "TRUE",
+	"var":    "VAR",
+	"while":  "WHILE",
+}
+
 func main() {
 	// You can use print statements as follows for debugging, they'll be visible when running tests.
 	//fmt.Fprintln(os.Stderr, "Logs from your program will appear here!")
@@ -142,7 +161,11 @@ func main() {
 				}
 			case (charByte >= 'a' && charByte <= 'z') || (charByte >= 'A' && charByte <= 'Z') || charByte == '_':
 				identifier, newIdx := getIdentifier(idx, fileContents)
-				builder.WriteString(fmt.Sprintf("IDENTIFIER %s null\n", identifier))
+				if value, ok := reservedWords[identifier]; ok {
+					builder.WriteString(fmt.Sprintf("%s %s null\n", value, identifier))
+				} else {
+					builder.WriteString(fmt.Sprintf("IDENTIFIER %s null\n", identifier))
+				}
 				idx = newIdx - 1
 			case charByte == '\n':
 				lineIdx++
