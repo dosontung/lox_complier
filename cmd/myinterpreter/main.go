@@ -140,7 +140,10 @@ func main() {
 						builder.WriteString(fmt.Sprintf("NUMBER %.*f %.1f\n", precision, number, number))
 					}
 				}
-
+			case (charByte >= 'a' && charByte <= 'z') || (charByte >= 'A' && charByte <= 'Z') || charByte == '_':
+				identifier, newIdx := getIdentifier(idx, fileContents)
+				builder.WriteString(fmt.Sprintf("IDENTIFIER %s null\n", identifier))
+				idx = newIdx - 1
 			case charByte == '\n':
 				lineIdx++
 			default:
@@ -205,4 +208,15 @@ func getNumber(idx int, fileContents []byte) (error, float64, int, int) {
 	}
 	return nil, floatValue, precision, i
 
+}
+
+func getIdentifier(idx int, fileContents []byte) (string, int) {
+	var i int
+	for i = idx; i < len(fileContents); i++ {
+		charByte := fileContents[i]
+		if (charByte >= 'a' && charByte <= 'z') || (charByte >= 'A' && charByte <= 'Z') || charByte == '_' {
+			continue
+		}
+	}
+	return string(fileContents[idx:i]), i
 }
