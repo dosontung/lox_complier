@@ -214,7 +214,7 @@ func getIdentifier(idx int, fileContents []byte) (string, int) {
 	var i int
 	for i = idx; i < len(fileContents); i++ {
 		charByte := fileContents[i]
-		if (charByte >= 'a' && charByte <= 'z') || (charByte >= 'A' && charByte <= 'Z') || charByte == '_' {
+		if (charByte >= 'a' && charByte <= 'z') || (charByte >= 'A' && charByte <= 'Z') || charByte == '_' || (charByte >= '0' && charByte <= '9') {
 			continue
 		}
 		break
