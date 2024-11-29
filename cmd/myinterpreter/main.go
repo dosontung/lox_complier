@@ -217,6 +217,8 @@ func getIdentifier(idx int, fileContents []byte) (string, int) {
 		if (charByte >= 'a' && charByte <= 'z') || (charByte >= 'A' && charByte <= 'Z') || charByte == '_' {
 			continue
 		}
+		break
 	}
+	fmt.Println("Identifier:", string(fileContents[idx:i]))
 	return string(fileContents[idx:i]), i
 }
