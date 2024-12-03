@@ -257,7 +257,7 @@ func (t *Tokennizer) Scan(fileContents []byte) {
 				if err == nil {
 					if !isInteger(number) {
 						//builder.WriteString(fmt.Sprintf("NUMBER %.*f %.*f\n", precision, number, precision, number))
-						t.AddToken(NewToken(NUMBER, fmt.Sprintf("%.*f", precision, number), fmt.Sprintf("%.*f", precision, number), lineIdx))
+						t.AddToken(NewToken(NUMBER, fmt.Sprintf("%.*f", precision, number), fmt.Sprintf("%f", number), lineIdx))
 					} else {
 						//builder.WriteString(fmt.Sprintf("NUMBER %.*f %.1f\n", precision, number, number))
 						t.AddToken(NewToken(NUMBER, fmt.Sprintf("%.*f", precision, number), fmt.Sprintf("%.1f", number), lineIdx))
