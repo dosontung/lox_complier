@@ -37,6 +37,8 @@ func (parser *Parser) primary() Expression {
 		return &LiteralExpression{"false"}
 	case tokenize.NUMBER:
 		return &LiteralExpression{token.Literal}
+	case tokenize.STRING:
+		return &LiteralExpression{token.Literal}
 	case tokenize.NIL:
 		return &LiteralExpression{"nil"}
 
