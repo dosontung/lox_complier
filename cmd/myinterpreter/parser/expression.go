@@ -1,6 +1,8 @@
 package parser
 
-import "strings"
+import (
+	"strings"
+)
 
 type ExpressionType string
 
@@ -57,6 +59,9 @@ func (v *VisitorImpl) VisitLiteralExpr(expr *LiteralExpression) interface{} {
 }
 
 func (v *VisitorImpl) VisitUnaryExpr(expr *UnaryExpression) interface{} {
-	return v.parenthesize(expr.Operator.Lexeme,
-		expr.Left, expr.Right)
+	var sb strings.Builder
+	sb.WriteString("(")
+	sb.WriteString(v.parenthesize(expr.Operator.Lexeme, expr.Right))
+	sb.WriteString(")")
+	return sb.String()
 }
