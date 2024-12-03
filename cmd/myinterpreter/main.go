@@ -1,44 +1,11 @@
 package main
 
 import (
-	"errors"
 	"fmt"
-	"math"
+	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/parser"
+	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/tokenize"
 	"os"
-	"strconv"
-	"strings"
 )
-
-type LogError struct {
-	sb strings.Builder
-}
-
-func (l *LogError) writeError(lineIdx int, message string) {
-	// Construct the error message
-	l.sb.WriteString("[line ")
-	l.sb.WriteString(fmt.Sprintf("%d] Error: ", lineIdx))
-	l.sb.WriteString(message)
-	l.sb.WriteString("\n")
-}
-
-var reservedWords = map[string]string{
-	"and":    "AND",
-	"class":  "CLASS",
-	"else":   "ELSE",
-	"false":  "FALSE",
-	"for":    "FOR",
-	"fun":    "FUN",
-	"if":     "IF",
-	"nil":    "NIL",
-	"or":     "OR",
-	"print":  "PRINT",
-	"return": "RETURN",
-	"super":  "SUPER",
-	"this":   "THIS",
-	"true":   "TRUE",
-	"var":    "VAR",
-	"while":  "WHILE",
-}
 
 func main() {
 	// You can use print statements as follows for debugging, they'll be visible when running tests.
@@ -51,7 +18,7 @@ func main() {
 
 	command := os.Args[1]
 
-	if command != "tokenize" {
+	if command != "tokenize" && command != "evaluate" && command != "parse" {
 		fmt.Fprintf(os.Stderr, "Unknown command: %s\n", command)
 		os.Exit(1)
 	}
@@ -60,187 +27,32 @@ func main() {
 	//
 	filename := os.Args[2]
 	fileContents, err := os.ReadFile(filename)
+
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error reading file: %v\n", err)
 		os.Exit(1)
 	}
-	lineIdx := 1
-	isComment := false
-	var builder strings.Builder
-	var logError LogError
-	if len(fileContents) > 0 {
-		for idx := 0; idx < len(fileContents); idx++ {
-			charByte := fileContents[idx]
-			if isComment {
-				if charByte == '\n' {
-					lineIdx++
-					isComment = false
-				}
-				continue
-			}
-			switch {
-			case charByte == '(':
-				builder.WriteString("LEFT_PAREN ( null\n")
-			case charByte == ')':
-				builder.WriteString("RIGHT_PAREN ) null\n")
-			case charByte == '{':
-				builder.WriteString("LEFT_BRACE { null\n")
-			case charByte == '}':
-				builder.WriteString("RIGHT_BRACE } null\n")
-			case charByte == '*':
-				builder.WriteString("STAR * null\n")
-			case charByte == '.':
-				builder.WriteString("DOT . null\n")
-			case charByte == ',':
-				builder.WriteString("COMMA , null\n")
-			case charByte == '+':
-				builder.WriteString("PLUS + null\n")
-			case charByte == '-':
-				builder.WriteString("MINUS - null\n")
-			case charByte == ';':
-				builder.WriteString("SEMICOLON ; null\n")
-			case charByte == '/':
-				if idx+1 < len(fileContents) && fileContents[idx+1] == '/' {
-					isComment = true
-					idx++
-				} else {
-					builder.WriteString("SLASH / null\n")
-				}
+	tkn := tokenize.NewTokennizer()
 
-			case charByte == '=':
-				if idx+1 < len(fileContents) && fileContents[idx+1] == '=' {
-					builder.WriteString("EQUAL_EQUAL == null\n")
-					idx++
-				} else {
-					builder.WriteString("EQUAL = null\n")
-				}
-			case charByte == '!':
-				if idx+1 < len(fileContents) && fileContents[idx+1] == '=' {
-					builder.WriteString("BANG_EQUAL != null\n")
-					idx++
-				} else {
-					builder.WriteString("BANG ! null\n")
-				}
-			case charByte == '<':
-				if idx+1 < len(fileContents) && fileContents[idx+1] == '=' {
-					builder.WriteString("LESS_EQUAL <= null\n")
-					idx++
-				} else {
-					builder.WriteString("LESS < null\n")
-				}
-			case charByte == '>':
-				if idx+1 < len(fileContents) && fileContents[idx+1] == '=' {
-					builder.WriteString("GREATER_EQUAL >= null\n")
-					idx++
-				} else {
-					builder.WriteString("GREATER > null\n")
-				}
-			case charByte == ' ':
-				continue
-			case charByte == '\t':
-				continue
-			case charByte == '"':
-				err, str, newIdx := getString(idx+1, fileContents)
-				idx = newIdx
-				if err != nil {
-					logError.writeError(lineIdx, "Unterminated string.")
-					idx--
-					//fmt.Fprintf(os.Stderr, "[line %d] Error: Unterminated string.\n", line_idx)
-				} else {
-					builder.WriteString(fmt.Sprintf("STRING \"%s\" %s\n", str, str))
-				}
-			case charByte >= '0' && charByte <= '9':
-				err, number, precision, newIdx := getNumber(idx, fileContents)
-				idx = newIdx - 1
-				if err == nil {
-					if !isInteger(number) {
-						builder.WriteString(fmt.Sprintf("NUMBER %.*f %.*f\n", precision, number, precision, number))
-					} else {
-						builder.WriteString(fmt.Sprintf("NUMBER %.*f %.1f\n", precision, number, number))
-					}
-				}
-			case (charByte >= 'a' && charByte <= 'z') || (charByte >= 'A' && charByte <= 'Z') || charByte == '_':
-				identifier, newIdx := getIdentifier(idx, fileContents)
-				if value, ok := reservedWords[identifier]; ok {
-					builder.WriteString(fmt.Sprintf("%s %s null\n", value, identifier))
-				} else {
-					builder.WriteString(fmt.Sprintf("IDENTIFIER %s null\n", identifier))
-				}
-				idx = newIdx - 1
-			case charByte == '\n':
-				lineIdx++
-			default:
-				logError.writeError(lineIdx, fmt.Sprintf("Unexpected character: %c", charByte))
-				//fmt.Fprintf(os.Stderr, "[line %d] Error: Unexpected character: %c\n", line_idx, charByte)
-			}
-		}
-		builder.WriteString("EOF  null\n")
-		fmt.Print(builder.String())
+	if command == "tokenize" {
+		tkn.Scan(fileContents)
 
-	} else {
-		fmt.Println("EOF  null") // Placeholder, remove this line when implementing the scanner
-	}
-	if logError.sb.Len() > 0 {
-		fmt.Fprint(os.Stderr, logError.sb.String())
-		os.Exit(65)
-	}
-}
-func isInteger(f float64) bool {
-	return f == math.Trunc(f)
-}
+		for _, token := range tkn.Tokens() {
+			fmt.Println(token.String())
+		}
 
-func getString(idx int, fileContents []byte) (error, string, int) {
-	var sb strings.Builder
-	hasError := true
-	i := idx
-	for i = idx; i < len(fileContents); i++ {
-		if fileContents[i] == '\n' {
-			break
-		}
-		if fileContents[i] == '"' {
-			hasError = false
-			break
-		}
-		sb.WriteByte(fileContents[i])
-	}
-	if hasError {
-		return errors.New("Error: Unterminated string."), "", i
-	}
-	return nil, sb.String(), i
-}
-
-func getNumber(idx int, fileContents []byte) (error, float64, int, int) {
-	i := idx
-	precision := 0
-	for i = idx; i < len(fileContents); i++ {
-		charByte := fileContents[i]
-		if charByte == '.' {
-			precision = i
-			continue
-		}
-		if charByte < '0' || charByte > '9' {
-			break
+		if tkn.LogError().Len() > 0 {
+			fmt.Fprint(os.Stderr, tkn.LogError().String())
+			os.Exit(65)
 		}
 	}
-	floatValue, err := strconv.ParseFloat(string(fileContents[idx:i]), 64)
-	if precision != 0 {
-		precision = i - precision - 1
-	}
-	if err != nil {
-		return err, floatValue, precision, i
-	}
-	return nil, floatValue, precision, i
+	if command == "parse" {
+		visitorImp := &parser.VisitorImpl{}
+		tkn.Scan(fileContents)
+		parser := parser.NewParser(tkn.Tokens())
+		expression := parser.Parse()
+		fmt.Println(expression.Accept(visitorImp).(string))
 
-}
-
-func getIdentifier(idx int, fileContents []byte) (string, int) {
-	var i int
-	for i = idx; i < len(fileContents); i++ {
-		charByte := fileContents[i]
-		if (charByte >= 'a' && charByte <= 'z') || (charByte >= 'A' && charByte <= 'Z') || charByte == '_' || (charByte >= '0' && charByte <= '9') {
-			continue
-		}
-		break
 	}
-	return string(fileContents[idx:i]), i
+
 }
