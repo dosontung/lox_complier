@@ -1,11 +1,7 @@
 package parser
 
-import "github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/tokenize"
-
 type GroupExpression struct {
-	Left     Expression
-	Right    Expression
-	Operator tokenize.Token
+	Expr Expression
 }
 
 func (expr *GroupExpression) Type() ExpressionType { return GROUPING }

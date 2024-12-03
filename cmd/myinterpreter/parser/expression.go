@@ -45,8 +45,11 @@ func (v *VisitorImpl) VisitBinaryExpr(expr *BinaryExpression) interface{} {
 }
 
 func (v *VisitorImpl) VisitGroupingExpr(expr *GroupExpression) interface{} {
-	return v.parenthesize(expr.Operator.Lexeme,
-		expr.Left, expr.Right)
+	var sb strings.Builder
+	sb.WriteString("(")
+	sb.WriteString(v.parenthesize("group", expr.Expr))
+	sb.WriteString(")")
+	return sb.String()
 }
 
 func (v *VisitorImpl) VisitLiteralExpr(expr *LiteralExpression) interface{} {

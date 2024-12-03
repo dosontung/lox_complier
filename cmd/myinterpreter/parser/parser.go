@@ -39,6 +39,11 @@ func (parser *Parser) primary() Expression {
 		return &LiteralExpression{token.Literal}
 	case tokenize.NIL:
 		return &LiteralExpression{"nil"}
+	case tokenize.LEFT_PAREN:
+		expr := &GroupExpression{Expr: parser.primary()}
+		if parser.currentToken().Type == tokenize.RIGHT_PAREN {
+			return expr
+		}
 
 	}
 	return &LiteralExpression{"null"}
