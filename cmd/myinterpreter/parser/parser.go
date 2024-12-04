@@ -14,7 +14,7 @@ func NewParser(tokens []*tokenize.Token) *Parser {
 }
 
 func (parser *Parser) Parse() Expression {
-	return parser.unary()
+	return parser.expression()
 }
 
 func (parser *Parser) nextToken() *tokenize.Token {
@@ -32,6 +32,21 @@ func (parser *Parser) isEnd() bool {
 	return parser.current >= len(parser.tokens) || parser.tokens[parser.current].Type == tokenize.EOF
 }
 
+func (parser *Parser) expression() Expression {
+	return parser.equality()
+}
+
+func (parser *Parser) equality() Expression {
+	return parser.comparison()
+}
+
+func (parser *Parser) comparison() Expression {
+	return parser.term()
+}
+
+func (parser *Parser) term() Expression {
+	return parser.factor()
+}
 func (parser *Parser) primary() Expression {
 	token := parser.nextToken()
 	switch token.Type {
@@ -44,7 +59,7 @@ func (parser *Parser) primary() Expression {
 	case tokenize.NIL:
 		return &LiteralExpression{"nil"}
 	case tokenize.LEFT_PAREN:
-		expr := &GroupExpression{Expr: parser.unary()}
+		expr := &GroupExpression{Expr: parser.expression()}
 		if parser.nextToken().Type == tokenize.RIGHT_PAREN {
 			return expr
 		}
@@ -61,4 +76,20 @@ func (parser *Parser) unary() Expression {
 		return &UnaryExpression{Operator: token, Right: parser.unary()}
 	}
 	return parser.primary()
+}
+
+func (parser *Parser) factor() Expression {
+	expr := parser.unary()
+	for !parser.isEnd() {
+		token := parser.currentToken()
+		switch token.Type {
+		case tokenize.STAR, tokenize.SLASH:
+			parser.nextToken()
+			expr = &BinaryExpression{Left: expr, Right: parser.unary(), Operator: token}
+		default:
+			return expr
+		}
+	}
+	return expr
+
 }

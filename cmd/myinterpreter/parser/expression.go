@@ -30,13 +30,13 @@ type VisitorImpl struct{}
 func (v *VisitorImpl) parenthesize(name string, exprs ...Expression) string {
 	var sb strings.Builder
 
-	//sb.WriteString("(")
+	sb.WriteString("(")
 	sb.WriteString(name)
 	for _, expr := range exprs {
 		sb.WriteString(" ")
 		sb.WriteString(expr.Accept(v).(string)) // Pass the visitor if needed
 	}
-	//sb.WriteString(")")
+	sb.WriteString(")")
 
 	return sb.String()
 }
@@ -47,21 +47,14 @@ func (v *VisitorImpl) VisitBinaryExpr(expr *BinaryExpression) interface{} {
 }
 
 func (v *VisitorImpl) VisitGroupingExpr(expr *GroupExpression) interface{} {
-	var sb strings.Builder
-	sb.WriteString("(")
-	sb.WriteString(v.parenthesize("group", expr.Expr))
-	sb.WriteString(")")
-	return sb.String()
+
+	return v.parenthesize("group", expr.Expr)
 }
 
 func (v *VisitorImpl) VisitLiteralExpr(expr *LiteralExpression) interface{} {
-	return v.parenthesize(expr.Value.(string))
+	return expr.Value.(string)
 }
 
 func (v *VisitorImpl) VisitUnaryExpr(expr *UnaryExpression) interface{} {
-	var sb strings.Builder
-	sb.WriteString("(")
-	sb.WriteString(v.parenthesize(expr.Operator.Lexeme, expr.Right))
-	sb.WriteString(")")
-	return sb.String()
+	return v.parenthesize(expr.Operator.Lexeme, expr.Right)
 }

@@ -5,7 +5,7 @@ import "github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/toke
 type BinaryExpression struct {
 	Left     Expression
 	Right    Expression
-	Operator tokenize.Token
+	Operator *tokenize.Token
 }
 
 func (expr *BinaryExpression) Type() ExpressionType { return BINARY }
