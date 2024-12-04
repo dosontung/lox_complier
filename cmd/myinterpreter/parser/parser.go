@@ -37,11 +37,33 @@ func (parser *Parser) expression() Expression {
 }
 
 func (parser *Parser) equality() Expression {
-	return parser.comparison()
+	expr := parser.comparison()
+	for !parser.isEnd() {
+		token := parser.currentToken()
+		switch token.Type {
+		case tokenize.GREATER, tokenize.GREATER_EQUAL, tokenize.LESS_EQUAL, tokenize.LESS:
+			parser.nextToken()
+			expr = &BinaryExpression{Left: expr, Right: parser.comparison(), Operator: token}
+		default:
+			return expr
+		}
+	}
+	return expr
 }
 
 func (parser *Parser) comparison() Expression {
-	return parser.term()
+	expr := parser.term()
+	for !parser.isEnd() {
+		token := parser.currentToken()
+		switch token.Type {
+		case tokenize.GREATER, tokenize.GREATER_EQUAL, tokenize.LESS_EQUAL, tokenize.LESS:
+			parser.nextToken()
+			expr = &BinaryExpression{Left: expr, Right: parser.term(), Operator: token}
+		default:
+			return expr
+		}
+	}
+	return expr
 }
 
 func (parser *Parser) term() Expression {
