@@ -19,6 +19,10 @@ func (v *Evaluator) VisitBinaryExpr(expr *parser.BinaryExpression) interface{} {
 		return rightVal.(float64) * leftVal.(float64)
 	case tokenize.SLASH:
 		return leftVal.(float64) / rightVal.(float64)
+	case tokenize.MINUS:
+		return leftVal.(float64) - rightVal.(float64)
+	case tokenize.PLUS:
+		return leftVal.(float64) + rightVal.(float64)
 	default: // tokenize.MINUS
 		return nil
 	}
