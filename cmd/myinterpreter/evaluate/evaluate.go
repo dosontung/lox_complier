@@ -1,7 +1,6 @@
 package evaluate
 
 import (
-	"fmt"
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/parser"
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/tokenize"
 	"math"
@@ -55,6 +54,6 @@ func (v *Evaluator) VisitUnaryExpr(expr *parser.UnaryExpression) interface{} {
 			return false
 		}
 	default: // tokenize.MINUS
-		return fmt.Sprintf("-%v", strVal)
+		return -expr.Right.Accept(v).(float64)
 	}
 }
