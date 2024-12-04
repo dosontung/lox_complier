@@ -14,7 +14,7 @@ func (v *Evaluator) VisitBinaryExpr(expr *parser.BinaryExpression) interface{} {
 }
 
 func (v *Evaluator) VisitGroupingExpr(expr *parser.GroupExpression) interface{} {
-	return nil
+	return expr.Expr.Accept(v)
 }
 
 func (v *Evaluator) VisitLiteralExpr(expr *parser.LiteralExpression) interface{} {
