@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/evaluate"
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/parser"
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/tokenize"
 	"os"
@@ -49,13 +50,26 @@ func main() {
 	if command == "parse" {
 		visitorImp := &parser.VisitorImpl{}
 		tkn.Scan(fileContents)
-		parser := parser.NewParser(tkn.Tokens())
-		expression := parser.Parse()
-		if parser.Error() != nil {
-			fmt.Fprintln(os.Stderr, parser.Error())
+		prs := parser.NewParser(tkn.Tokens())
+		expression := prs.Parse()
+		if prs.Error() != nil {
+			fmt.Fprintln(os.Stderr, prs.Error())
 			os.Exit(65)
 		}
 		fmt.Println(expression.Accept(visitorImp).(string))
+
+	}
+
+	if command == "evaluate" {
+		evaluator := &evaluate.Evaluator{}
+		tkn.Scan(fileContents)
+		prs := parser.NewParser(tkn.Tokens())
+		expression := prs.Parse()
+		if prs.Error() != nil {
+			fmt.Fprintln(os.Stderr, prs.Error())
+			os.Exit(65)
+		}
+		fmt.Println(expression.Accept(evaluator))
 
 	}
 
