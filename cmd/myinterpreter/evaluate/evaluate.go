@@ -1,7 +1,9 @@
 package evaluate
 
 import (
+	"fmt"
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/parser"
+	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/tokenize"
 	"math"
 	"strconv"
 )
@@ -30,6 +32,15 @@ func (v *Evaluator) VisitLiteralExpr(expr *parser.LiteralExpression) interface{}
 }
 
 func (v *Evaluator) VisitUnaryExpr(expr *parser.UnaryExpression) interface{} {
-	return nil
-
+	strVal := expr.Right.Accept(v)
+	switch expr.Operator.Type {
+	case tokenize.BANG:
+		if strVal == false || strVal == "false" || strVal == "nil" {
+			return true
+		} else {
+			return false
+		}
+	default: // tokenize.MINUS
+		return fmt.Sprintf("-%v", strVal)
+	}
 }
