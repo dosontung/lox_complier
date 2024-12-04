@@ -51,6 +51,10 @@ func main() {
 		tkn.Scan(fileContents)
 		parser := parser.NewParser(tkn.Tokens())
 		expression := parser.Parse()
+		if parser.Error() != nil {
+			fmt.Fprintln(os.Stderr, parser.Error())
+			os.Exit(65)
+		}
 		fmt.Println(expression.Accept(visitorImp).(string))
 
 	}

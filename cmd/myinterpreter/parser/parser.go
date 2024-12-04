@@ -1,12 +1,15 @@
 package parser
 
 import (
+	"errors"
+	"fmt"
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/tokenize"
 )
 
 type Parser struct {
 	tokens  []*tokenize.Token
 	current int
+	err     error
 }
 
 func NewParser(tokens []*tokenize.Token) *Parser {
@@ -28,6 +31,9 @@ func (parser *Parser) currentToken() *tokenize.Token {
 	return parser.tokens[parser.current]
 }
 
+func (parser *Parser) Error() error {
+	return parser.err
+}
 func (parser *Parser) isEnd() bool {
 	return parser.current >= len(parser.tokens) || parser.tokens[parser.current].Type == tokenize.EOF
 }
@@ -125,5 +131,6 @@ func (parser *Parser) primary() Expression {
 		}
 
 	}
-	return &LiteralExpression{"null"}
+	parser.err = errors.New(fmt.Sprintf("[line %d] Error at '%s': Expect expression.", token.Line, token.Lexeme))
+	return nil
 }
