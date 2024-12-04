@@ -1,6 +1,10 @@
 package evaluate
 
-import "github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/parser"
+import (
+	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/parser"
+	"math"
+	"strconv"
+)
 
 type Evaluator struct {
 }
@@ -14,7 +18,15 @@ func (v *Evaluator) VisitGroupingExpr(expr *parser.GroupExpression) interface{} 
 }
 
 func (v *Evaluator) VisitLiteralExpr(expr *parser.LiteralExpression) interface{} {
-	return expr.Value
+	strVal := expr.Value.(string)
+	floatValue, err := strconv.ParseFloat(strVal, 64)
+	if err != nil {
+		return strVal
+	}
+	if floatValue == math.Trunc(floatValue) {
+		return math.Trunc(floatValue)
+	}
+	return strVal
 }
 
 func (v *Evaluator) VisitUnaryExpr(expr *parser.UnaryExpression) interface{} {
