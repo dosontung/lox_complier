@@ -45,8 +45,46 @@ func (parser *Parser) comparison() Expression {
 }
 
 func (parser *Parser) term() Expression {
-	return parser.factor()
+	expr := parser.factor()
+	for !parser.isEnd() {
+		token := parser.currentToken()
+		switch token.Type {
+		case tokenize.PLUS, tokenize.MINUS:
+			parser.nextToken()
+			expr = &BinaryExpression{Left: expr, Right: parser.factor(), Operator: token}
+		default:
+			return expr
+		}
+	}
+	return expr
 }
+
+func (parser *Parser) factor() Expression {
+	expr := parser.unary()
+	for !parser.isEnd() {
+		token := parser.currentToken()
+		switch token.Type {
+		case tokenize.STAR, tokenize.SLASH:
+			parser.nextToken()
+			expr = &BinaryExpression{Left: expr, Right: parser.unary(), Operator: token}
+		default:
+			return expr
+		}
+	}
+	return expr
+
+}
+
+func (parser *Parser) unary() Expression {
+	token := parser.currentToken()
+	switch token.Type {
+	case tokenize.BANG, tokenize.MINUS:
+		parser.nextToken()
+		return &UnaryExpression{Operator: token, Right: parser.unary()}
+	}
+	return parser.primary()
+}
+
 func (parser *Parser) primary() Expression {
 	token := parser.nextToken()
 	switch token.Type {
@@ -66,30 +104,4 @@ func (parser *Parser) primary() Expression {
 
 	}
 	return &LiteralExpression{"null"}
-}
-
-func (parser *Parser) unary() Expression {
-	token := parser.currentToken()
-	switch token.Type {
-	case tokenize.BANG, tokenize.MINUS:
-		parser.nextToken()
-		return &UnaryExpression{Operator: token, Right: parser.unary()}
-	}
-	return parser.primary()
-}
-
-func (parser *Parser) factor() Expression {
-	expr := parser.unary()
-	for !parser.isEnd() {
-		token := parser.currentToken()
-		switch token.Type {
-		case tokenize.STAR, tokenize.SLASH:
-			parser.nextToken()
-			expr = &BinaryExpression{Left: expr, Right: parser.unary(), Operator: token}
-		default:
-			return expr
-		}
-	}
-	return expr
-
 }
