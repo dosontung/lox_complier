@@ -12,7 +12,17 @@ type Evaluator struct {
 }
 
 func (v *Evaluator) VisitBinaryExpr(expr *parser.BinaryExpression) interface{} {
-	return nil
+	rightVal := expr.Right.Accept(v)
+	leftVal := expr.Left.Accept(v)
+	switch expr.Operator.Type {
+	case tokenize.STAR:
+		return rightVal.(float64) * leftVal.(float64)
+	case tokenize.SLASH:
+		return leftVal.(float64) / rightVal.(float64)
+	default: // tokenize.MINUS
+		return nil
+	}
+
 }
 
 func (v *Evaluator) VisitGroupingExpr(expr *parser.GroupExpression) interface{} {
@@ -28,7 +38,7 @@ func (v *Evaluator) VisitLiteralExpr(expr *parser.LiteralExpression) interface{}
 	if floatValue == math.Trunc(floatValue) {
 		return math.Trunc(floatValue)
 	}
-	return strVal
+	return floatValue
 }
 
 func (v *Evaluator) VisitUnaryExpr(expr *parser.UnaryExpression) interface{} {
