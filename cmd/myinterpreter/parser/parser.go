@@ -41,7 +41,7 @@ func (parser *Parser) equality() Expression {
 	for !parser.isEnd() {
 		token := parser.currentToken()
 		switch token.Type {
-		case tokenize.GREATER, tokenize.GREATER_EQUAL, tokenize.LESS_EQUAL, tokenize.LESS:
+		case tokenize.BANG_EQUAL, tokenize.EQUAL_EQUAL:
 			parser.nextToken()
 			expr = &BinaryExpression{Left: expr, Right: parser.comparison(), Operator: token}
 		default:
