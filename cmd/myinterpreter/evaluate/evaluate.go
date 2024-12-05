@@ -16,24 +16,21 @@ type Evaluator struct {
 func (v *Evaluator) VisitBinaryExpr(expr *parser.BinaryExpression) interface{} {
 	rightVal := expr.Right.Accept(v)
 	leftVal := expr.Left.Accept(v)
-	sameType := false
+	sameType, isNumber := false, false
 	if reflect.TypeOf(leftVal) == reflect.TypeOf(rightVal) {
 		sameType = true
 	}
+	if _, ok := leftVal.(float64); ok {
+		isNumber = true
+	}
 	switch expr.Operator.Type {
 	case tokenize.STAR:
-		if _, ok := leftVal.(float64); !ok {
-			v.raiseError(errors.OperandMustBeNumber)
-		}
-		if _, ok := rightVal.(float64); !ok {
+		if !isNumber || !sameType {
 			v.raiseError(errors.OperandMustBeNumber)
 		}
 		return rightVal.(float64) * leftVal.(float64)
 	case tokenize.SLASH:
-		if _, ok := leftVal.(float64); !ok {
-			v.raiseError(errors.OperandMustBeNumber)
-		}
-		if _, ok := rightVal.(float64); !ok {
+		if !isNumber || !sameType {
 			v.raiseError(errors.OperandMustBeNumber)
 		}
 		return leftVal.(float64) / rightVal.(float64)
@@ -51,12 +48,24 @@ func (v *Evaluator) VisitBinaryExpr(expr *parser.BinaryExpression) interface{} {
 		}
 		return leftVal.(float64) + rightVal.(float64)
 	case tokenize.GREATER:
+		if !isNumber || !sameType {
+			v.raiseError(errors.OperandMustBeNumber)
+		}
 		return leftVal.(float64) > rightVal.(float64)
 	case tokenize.GREATER_EQUAL:
+		if !isNumber || !sameType {
+			v.raiseError(errors.OperandMustBeNumber)
+		}
 		return leftVal.(float64) >= rightVal.(float64)
 	case tokenize.LESS_EQUAL:
+		if !isNumber || !sameType {
+			v.raiseError(errors.OperandMustBeNumber)
+		}
 		return leftVal.(float64) <= rightVal.(float64)
 	case tokenize.LESS:
+		if !isNumber || !sameType {
+			v.raiseError(errors.OperandMustBeNumber)
+		}
 		return leftVal.(float64) < rightVal.(float64)
 	case tokenize.BANG_EQUAL:
 		return leftVal != rightVal
