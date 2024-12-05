@@ -18,8 +18,20 @@ func (v *Evaluator) VisitBinaryExpr(expr *parser.BinaryExpression) interface{} {
 
 	switch expr.Operator.Type {
 	case tokenize.STAR:
+		if _, ok := leftVal.(string); ok {
+			v.raiseError(errors.OperandMustBeNumber)
+		}
+		if _, ok := rightVal.(string); ok {
+			v.raiseError(errors.OperandMustBeNumber)
+		}
 		return rightVal.(float64) * leftVal.(float64)
 	case tokenize.SLASH:
+		if _, ok := leftVal.(string); ok {
+			v.raiseError(errors.OperandMustBeNumber)
+		}
+		if _, ok := rightVal.(string); ok {
+			v.raiseError(errors.OperandMustBeNumber)
+		}
 		return leftVal.(float64) / rightVal.(float64)
 	case tokenize.MINUS:
 		return leftVal.(float64) - rightVal.(float64)
