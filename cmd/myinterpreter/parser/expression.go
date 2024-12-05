@@ -1,6 +1,8 @@
 package parser
 
 import (
+	"fmt"
+	"math"
 	"strings"
 )
 
@@ -34,7 +36,7 @@ func (v *VisitorImpl) parenthesize(name string, exprs ...Expression) string {
 	sb.WriteString(name)
 	for _, expr := range exprs {
 		sb.WriteString(" ")
-		sb.WriteString(expr.Accept(v).(string)) // Pass the visitor if needed
+		sb.WriteString(fmt.Sprintf("%v", expr.Accept(v))) // Pass the visitor if needed
 	}
 	sb.WriteString(")")
 
@@ -52,7 +54,13 @@ func (v *VisitorImpl) VisitGroupingExpr(expr *GroupExpression) interface{} {
 }
 
 func (v *VisitorImpl) VisitLiteralExpr(expr *LiteralExpression) interface{} {
-	return expr.Value.(string)
+	if number, ok := expr.Value.(float64); ok {
+		if number == math.Trunc(number) {
+			return fmt.Sprintf("%v.0", number)
+		}
+		return fmt.Sprintf("%v", number)
+	}
+	return expr.Value
 }
 
 func (v *VisitorImpl) VisitUnaryExpr(expr *UnaryExpression) interface{} {

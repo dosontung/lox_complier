@@ -115,6 +115,9 @@ func formatLiteral(literal interface{}) string {
 	if literal == nil {
 		return "null"
 	}
+	if number, ok := literal.(float64); ok && number == math.Trunc(number) {
+		return fmt.Sprintf("%v.0", number)
+	}
 	return fmt.Sprintf("%v", literal)
 }
 
@@ -162,78 +165,59 @@ func (t *Tokennizer) Scan(fileContents []byte) {
 			}
 			switch {
 			case charByte == '(':
-				//builder.WriteString("LEFT_PAREN ( null\n")
 				t.AddToken(NewToken(LEFT_PAREN, "(", nil, lineIdx))
 			case charByte == ')':
-				//builder.WriteString("RIGHT_PAREN ) null\n")
 				t.AddToken(NewToken(RIGHT_PAREN, ")", nil, lineIdx))
 			case charByte == '{':
-				//builder.WriteString("LEFT_BRACE { null\n")
 				t.AddToken(NewToken(LEFT_BRACE, "{", nil, lineIdx))
 			case charByte == '}':
-				//builder.WriteString("RIGHT_BRACE } null\n")
 				t.AddToken(NewToken(RIGHT_BRACE, "}", nil, lineIdx))
 			case charByte == '*':
-				//builder.WriteString("STAR * null\n")
 				t.AddToken(NewToken(STAR, "*", nil, lineIdx))
 			case charByte == '.':
-				//builder.WriteString("DOT . null\n")
 				t.AddToken(NewToken(DOT, ".", nil, lineIdx))
 			case charByte == ',':
-				//builder.WriteString("COMMA , null\n")
 				t.AddToken(NewToken(COMMA, ",", nil, lineIdx))
 			case charByte == '+':
-				//builder.WriteString("PLUS + null\n")
 				t.AddToken(NewToken(PLUS, "+", nil, lineIdx))
 			case charByte == '-':
-				//builder.WriteString("MINUS - null\n")
 				t.AddToken(NewToken(MINUS, "-", nil, lineIdx))
 			case charByte == ';':
-				//builder.WriteString("SEMICOLON ; null\n")
 				t.AddToken(NewToken(SEMICOLON, ";", nil, lineIdx))
 			case charByte == '/':
 				if idx+1 < len(fileContents) && fileContents[idx+1] == '/' {
 					isComment = true
 					idx++
 				} else {
-					//builder.WriteString("SLASH / null\n")
 					t.AddToken(NewToken(SLASH, "/", nil, lineIdx))
 				}
 
 			case charByte == '=':
 				if idx+1 < len(fileContents) && fileContents[idx+1] == '=' {
-					//builder.WriteString("EQUAL_EQUAL == null\n")
 					t.AddToken(NewToken(EQUAL_EQUAL, "==", nil, lineIdx))
 					idx++
 				} else {
-					//builder.WriteString("EQUAL = null\n")
 					t.AddToken(NewToken(EQUAL, "=", nil, lineIdx))
 				}
 			case charByte == '!':
 				if idx+1 < len(fileContents) && fileContents[idx+1] == '=' {
-					//builder.WriteString("BANG_EQUAL != null\n")
 					t.AddToken(NewToken(BANG_EQUAL, "!=", nil, lineIdx))
 					idx++
 				} else {
-					//builder.WriteString("BANG ! null\n")
 					t.AddToken(NewToken(BANG, "!", nil, lineIdx))
 				}
 			case charByte == '<':
 				if idx+1 < len(fileContents) && fileContents[idx+1] == '=' {
-					//builder.WriteString("LESS_EQUAL <= null\n")
 					t.AddToken(NewToken(LESS_EQUAL, "<=", nil, lineIdx))
 					idx++
 				} else {
-					//builder.WriteString("LESS < null\n")
 					t.AddToken(NewToken(LESS, "<", nil, lineIdx))
 				}
 			case charByte == '>':
 				if idx+1 < len(fileContents) && fileContents[idx+1] == '=' {
-					//builder.WriteString("GREATER_EQUAL >= null\n")
 					t.AddToken(NewToken(GREATER_EQUAL, ">=", nil, lineIdx))
 					idx++
 				} else {
-					//builder.WriteString("GREATER > null\n")
 					t.AddToken(NewToken(GREATER, ">", nil, lineIdx))
 				}
 			case charByte == ' ':
@@ -247,7 +231,6 @@ func (t *Tokennizer) Scan(fileContents []byte) {
 					t.logError.writeError(lineIdx, "Unterminated string.")
 					idx--
 				} else {
-					//builder.WriteString(fmt.Sprintf("STRING \"%s\" %s\n", str, str))
 					t.AddToken(NewToken(STRING, fmt.Sprintf("\"%s\"", str), str, lineIdx))
 
 				}
@@ -256,20 +239,16 @@ func (t *Tokennizer) Scan(fileContents []byte) {
 				idx = newIdx - 1
 				if err == nil {
 					if !isInteger(number) {
-						//builder.WriteString(fmt.Sprintf("NUMBER %.*f %.*f\n", precision, number, precision, number))
-						t.AddToken(NewToken(NUMBER, fmt.Sprintf("%.*f", precision, number), fmt.Sprintf("%g", number), lineIdx))
+						t.AddToken(NewToken(NUMBER, fmt.Sprintf("%.*f", precision, number), number, lineIdx))
 					} else {
-						//builder.WriteString(fmt.Sprintf("NUMBER %.*f %.1f\n", precision, number, number))
-						t.AddToken(NewToken(NUMBER, fmt.Sprintf("%.*f", precision, number), fmt.Sprintf("%.1f", number), lineIdx))
+						t.AddToken(NewToken(NUMBER, fmt.Sprintf("%.*f", precision, number), number, lineIdx))
 					}
 				}
 			case (charByte >= 'a' && charByte <= 'z') || (charByte >= 'A' && charByte <= 'Z') || charByte == '_':
 				identifier, newIdx := getIdentifier(idx, fileContents)
 				if value, ok := reservedWords[identifier]; ok {
-					//builder.WriteString(fmt.Sprintf("%s %s null\n", value, identifier))
 					t.AddToken(NewToken(value, identifier, nil, lineIdx))
 				} else {
-					//builder.WriteString(fmt.Sprintf("IDENTIFIER %s null\n", identifier))
 					t.AddToken(NewToken(IDENTIFIER, identifier, nil, lineIdx))
 				}
 				idx = newIdx - 1
@@ -277,7 +256,6 @@ func (t *Tokennizer) Scan(fileContents []byte) {
 				lineIdx++
 			default:
 				t.logError.writeError(lineIdx, fmt.Sprintf("Unexpected character: %c", charByte))
-				//fmt.Fprintf(os.Stderr, "[line %d] Error: Unexpected character: %c\n", line_idx, charByte)
 			}
 		}
 		t.AddToken(NewToken(EOF, "", nil, lineIdx))
