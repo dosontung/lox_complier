@@ -272,9 +272,9 @@ func getString(idx int, fileContents []byte) (error, string, int) {
 	hasError := true
 	i := idx
 	for i = idx; i < len(fileContents); i++ {
-		if fileContents[i] == '\n' {
-			break
-		}
+		//if fileContents[i] == '\n' {
+		//	break
+		//}
 		if fileContents[i] == '"' {
 			hasError = false
 			break

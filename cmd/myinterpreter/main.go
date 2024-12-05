@@ -79,12 +79,14 @@ func main() {
 		interpreter := statement.NewInterpreter(evaluator)
 		tkn.Scan(fileContents)
 		prs := parser.NewParser(tkn.Tokens())
-		stmt := prs.ParseStmt()
+		stmtList := prs.ParseStmt()
 		if prs.Error() != nil {
 			fmt.Fprintln(os.Stderr, prs.Error())
 			os.Exit(65)
 		}
-		fmt.Println(interpreter.Interpret(stmt))
+		for _, stmt := range stmtList {
+			fmt.Println(interpreter.Interpret(stmt))
+		}
 
 	}
 

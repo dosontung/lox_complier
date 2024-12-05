@@ -17,8 +17,12 @@ func NewParser(tokens []*tokenize.Token) *Parser {
 	return &Parser{tokens: tokens, current: 0}
 }
 
-func (parser *Parser) ParseStmt() core.Statement {
-	return parser.printStatement()
+func (parser *Parser) ParseStmt() []core.Statement {
+	out := make([]core.Statement, 0)
+	for !parser.isEnd() {
+		out = append(out, parser.printStatement())
+	}
+	return out
 }
 
 func (parser *Parser) printStatement() core.Statement {
@@ -26,7 +30,7 @@ func (parser *Parser) printStatement() core.Statement {
 	if token.Type == tokenize.PRINT {
 		parser.nextToken()
 		stmt := &core.PrintStatement{Expr: parser.expression()}
-		stmtTrailing := parser.currentToken()
+		stmtTrailing := parser.nextToken()
 		if stmtTrailing.Type == tokenize.SEMICOLON {
 			return stmt
 		}
