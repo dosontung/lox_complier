@@ -117,9 +117,9 @@ func (parser *Parser) primary() Expression {
 	token := parser.nextToken()
 	switch token.Type {
 	case tokenize.TRUE:
-		return &LiteralExpression{"true"}
+		return &LiteralExpression{true}
 	case tokenize.FALSE:
-		return &LiteralExpression{"false"}
+		return &LiteralExpression{false}
 	case tokenize.NUMBER, tokenize.STRING:
 		return &LiteralExpression{token.Literal}
 	case tokenize.NIL:

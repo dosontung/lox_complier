@@ -3,5 +3,6 @@ package errors
 type CError string
 
 const (
-	OperandMustBeNumber = "Operand must be a number."
+	OperandMustBeNumber    CError = "Operand must be a number."
+	OperandsMustBeSameType CError = "Operands must be two numbers or two strings."
 )

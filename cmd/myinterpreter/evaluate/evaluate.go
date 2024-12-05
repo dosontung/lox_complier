@@ -7,6 +7,7 @@ import (
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/tokenize"
 	"math"
 	"os"
+	"reflect"
 )
 
 type Evaluator struct {
@@ -15,27 +16,36 @@ type Evaluator struct {
 func (v *Evaluator) VisitBinaryExpr(expr *parser.BinaryExpression) interface{} {
 	rightVal := expr.Right.Accept(v)
 	leftVal := expr.Left.Accept(v)
-
+	sameType := false
+	if reflect.TypeOf(leftVal) == reflect.TypeOf(rightVal) {
+		sameType = true
+	}
 	switch expr.Operator.Type {
 	case tokenize.STAR:
-		if _, ok := leftVal.(string); ok {
+		if _, ok := leftVal.(float64); !ok {
 			v.raiseError(errors.OperandMustBeNumber)
 		}
-		if _, ok := rightVal.(string); ok {
+		if _, ok := rightVal.(float64); !ok {
 			v.raiseError(errors.OperandMustBeNumber)
 		}
 		return rightVal.(float64) * leftVal.(float64)
 	case tokenize.SLASH:
-		if _, ok := leftVal.(string); ok {
+		if _, ok := leftVal.(float64); !ok {
 			v.raiseError(errors.OperandMustBeNumber)
 		}
-		if _, ok := rightVal.(string); ok {
+		if _, ok := rightVal.(float64); !ok {
 			v.raiseError(errors.OperandMustBeNumber)
 		}
 		return leftVal.(float64) / rightVal.(float64)
 	case tokenize.MINUS:
+		if !sameType {
+			v.raiseError(errors.OperandsMustBeSameType)
+		}
 		return leftVal.(float64) - rightVal.(float64)
 	case tokenize.PLUS:
+		if !sameType {
+			v.raiseError(errors.OperandsMustBeSameType)
+		}
 		if _, ok := rightVal.(string); ok {
 			return fmt.Sprintf("%s%s", leftVal.(string), rightVal.(string))
 		}
@@ -86,14 +96,14 @@ func (v *Evaluator) VisitUnaryExpr(expr *parser.UnaryExpression) interface{} {
 			return false
 		}
 	default: // tokenize.MINUS
-		if _, ok := strVal.(string); ok {
+		if _, ok := strVal.(float64); !ok {
 			v.raiseError(errors.OperandMustBeNumber)
 		}
 		return -expr.Right.Accept(v).(float64)
 	}
 }
 
-func (v *Evaluator) raiseError(err string) {
+func (v *Evaluator) raiseError(err errors.CError) {
 	fmt.Fprintln(os.Stderr, err)
 	os.Exit(70)
 }

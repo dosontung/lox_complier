@@ -60,7 +60,7 @@ func (v *VisitorImpl) VisitLiteralExpr(expr *LiteralExpression) interface{} {
 		}
 		return fmt.Sprintf("%v", number)
 	}
-	return expr.Value
+	return fmt.Sprintf("%v", expr.Value)
 }
 
 func (v *VisitorImpl) VisitUnaryExpr(expr *UnaryExpression) interface{} {
