@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/evaluate"
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/parser"
+	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/statement"
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/tokenize"
 	"os"
 )
@@ -19,7 +20,7 @@ func main() {
 
 	command := os.Args[1]
 
-	if command != "tokenize" && command != "evaluate" && command != "parse" {
+	if command != "tokenize" && command != "evaluate" && command != "parse" && command != "run" {
 		fmt.Fprintf(os.Stderr, "Unknown command: %s\n", command)
 		os.Exit(1)
 	}
@@ -69,7 +70,21 @@ func main() {
 			fmt.Fprintln(os.Stderr, prs.Error())
 			os.Exit(65)
 		}
-		fmt.Println(expression.Accept(evaluator))
+		fmt.Println(evaluator.Evaluate(expression))
+
+	}
+
+	if command == "run" {
+		evaluator := &evaluate.Evaluator{}
+		interpreter := statement.NewInterpreter(evaluator)
+		tkn.Scan(fileContents)
+		prs := parser.NewParser(tkn.Tokens())
+		stmt := prs.ParseStmt()
+		if prs.Error() != nil {
+			fmt.Fprintln(os.Stderr, prs.Error())
+			os.Exit(65)
+		}
+		fmt.Println(interpreter.Interpret(stmt))
 
 	}
 

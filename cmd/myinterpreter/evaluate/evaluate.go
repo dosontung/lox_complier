@@ -2,8 +2,8 @@ package evaluate
 
 import (
 	"fmt"
+	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/core"
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/errors"
-	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/parser"
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/tokenize"
 	"math"
 	"os"
@@ -13,7 +13,9 @@ import (
 type Evaluator struct {
 }
 
-func (v *Evaluator) VisitBinaryExpr(expr *parser.BinaryExpression) interface{} {
+var _ core.ExprVisitor = &Evaluator{}
+
+func (v *Evaluator) VisitBinaryExpr(expr *core.BinaryExpression) interface{} {
 	rightVal := expr.Right.Accept(v)
 	leftVal := expr.Left.Accept(v)
 	sameType, isNumber := false, false
@@ -77,11 +79,11 @@ func (v *Evaluator) VisitBinaryExpr(expr *parser.BinaryExpression) interface{} {
 
 }
 
-func (v *Evaluator) VisitGroupingExpr(expr *parser.GroupExpression) interface{} {
+func (v *Evaluator) VisitGroupingExpr(expr *core.GroupExpression) interface{} {
 	return expr.Expr.Accept(v)
 }
 
-func (v *Evaluator) VisitLiteralExpr(expr *parser.LiteralExpression) interface{} {
+func (v *Evaluator) VisitLiteralExpr(expr *core.LiteralExpression) interface{} {
 	strVal := expr.Value
 	switch strVal.(type) {
 	case string:
@@ -95,7 +97,7 @@ func (v *Evaluator) VisitLiteralExpr(expr *parser.LiteralExpression) interface{}
 	return strVal
 }
 
-func (v *Evaluator) VisitUnaryExpr(expr *parser.UnaryExpression) interface{} {
+func (v *Evaluator) VisitUnaryExpr(expr *core.UnaryExpression) interface{} {
 	strVal := expr.Right.Accept(v)
 	switch expr.Operator.Type {
 	case tokenize.BANG:
@@ -110,6 +112,10 @@ func (v *Evaluator) VisitUnaryExpr(expr *parser.UnaryExpression) interface{} {
 		}
 		return -expr.Right.Accept(v).(float64)
 	}
+}
+
+func (v *Evaluator) Evaluate(expr core.Expression) interface{} {
+	return expr.Accept(v)
 }
 
 func (v *Evaluator) raiseError(err errors.CError) {
