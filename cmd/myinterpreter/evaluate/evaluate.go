@@ -26,6 +26,15 @@ func (v *Evaluator) VisitBinaryExpr(expr *parser.BinaryExpression) interface{} {
 			return fmt.Sprintf("%s%s", leftVal.(string), rightVal.(string))
 		}
 		return leftVal.(float64) + rightVal.(float64)
+	case tokenize.GREATER:
+		return leftVal.(float64) > rightVal.(float64)
+	case tokenize.GREATER_EQUAL:
+		return leftVal.(float64) >= rightVal.(float64)
+	case tokenize.LESS_EQUAL:
+		return leftVal.(float64) <= rightVal.(float64)
+	case tokenize.LESS:
+		return leftVal.(float64) < rightVal.(float64)
+
 	default: // tokenize.MINUS
 		return nil
 	}
