@@ -2,9 +2,11 @@ package evaluate
 
 import (
 	"fmt"
+	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/errors"
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/parser"
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/tokenize"
 	"math"
+	"os"
 )
 
 type Evaluator struct {
@@ -72,6 +74,14 @@ func (v *Evaluator) VisitUnaryExpr(expr *parser.UnaryExpression) interface{} {
 			return false
 		}
 	default: // tokenize.MINUS
+		if _, ok := strVal.(string); ok {
+			v.raiseError(errors.OperandMustBeNumber)
+		}
 		return -expr.Right.Accept(v).(float64)
 	}
+}
+
+func (v *Evaluator) raiseError(err string) {
+	fmt.Fprintln(os.Stderr, err)
+	os.Exit(70)
 }
