@@ -34,7 +34,10 @@ func (v *Evaluator) VisitBinaryExpr(expr *parser.BinaryExpression) interface{} {
 		return leftVal.(float64) <= rightVal.(float64)
 	case tokenize.LESS:
 		return leftVal.(float64) < rightVal.(float64)
-
+	case tokenize.BANG_EQUAL:
+		return leftVal != rightVal
+	case tokenize.EQUAL_EQUAL:
+		return leftVal == rightVal
 	default: // tokenize.MINUS
 		return nil
 	}
