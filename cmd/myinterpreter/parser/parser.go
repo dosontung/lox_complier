@@ -35,6 +35,11 @@ func (parser *Parser) printStatement() core.Statement {
 			return stmt
 		}
 	}
+	expr := &core.ExpressionStatement{Expr: parser.expression()}
+	stmtTrailing := parser.nextToken()
+	if stmtTrailing.Type == tokenize.SEMICOLON {
+		return expr
+	}
 	return nil
 
 }
@@ -50,6 +55,9 @@ func (parser *Parser) nextToken() *tokenize.Token {
 }
 
 func (parser *Parser) currentToken() *tokenize.Token {
+	if parser.current >= len(parser.tokens) {
+		return parser.tokens[len(parser.tokens)-1]
+	}
 	return parser.tokens[parser.current]
 }
 

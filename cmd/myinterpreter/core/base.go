@@ -11,7 +11,8 @@ const (
 )
 
 const (
-	PRINT StatementType = "LITERAL"
+	PRINT      StatementType = "PRINT"
+	EXPRESSION StatementType = "EXPRESSION"
 )
 
 type Expression interface {
@@ -33,4 +34,5 @@ type Statement interface {
 
 type StatementVisitor interface {
 	VisitPrintStmt(statement *PrintStatement) interface{}
+	VisitExpressionStmt(statement *ExpressionStatement) interface{}
 }

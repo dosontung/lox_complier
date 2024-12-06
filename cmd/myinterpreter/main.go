@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/core"
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/evaluate"
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/parser"
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/statement"
@@ -85,6 +86,10 @@ func main() {
 			os.Exit(65)
 		}
 		for _, stmt := range stmtList {
+			if stmt.Type() == core.EXPRESSION {
+				interpreter.Interpret(stmt)
+				continue
+			}
 			fmt.Println(interpreter.Interpret(stmt))
 		}
 
