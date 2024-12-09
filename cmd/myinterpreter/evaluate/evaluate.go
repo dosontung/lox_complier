@@ -24,7 +24,7 @@ var _ core.ExprVisitor = &Evaluator{}
 func (v *Evaluator) VisitVarExpr(expr *core.VarExpression) interface{} {
 	err, i := v.env.GetKey(expr.Name.Lexeme)
 	if err != nil {
-		return nil
+		v.raiseError(errors.UndefinedVar, fmt.Sprintf(" '%s'.", expr.Name.Lexeme))
 	}
 	return i
 }
@@ -132,7 +132,11 @@ func (v *Evaluator) Evaluate(expr core.Expression) interface{} {
 	return expr.Accept(v)
 }
 
-func (v *Evaluator) raiseError(err errors.CError) {
-	fmt.Fprintln(os.Stderr, err)
+func (v *Evaluator) raiseError(err errors.CError, etcs ...string) {
+	fmt.Fprint(os.Stderr, err)
+	for _, etc := range etcs {
+		fmt.Fprint(os.Stderr, etc)
+	}
+	fmt.Print("\n")
 	os.Exit(70)
 }
