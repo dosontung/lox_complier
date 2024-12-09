@@ -5,7 +5,8 @@ type ExpressionStatement struct {
 }
 
 func (p *ExpressionStatement) Accept(visitor StatementVisitor) interface{} {
-	return visitor.VisitExpressionStmt(p)
+	visitor.VisitExpressionStmt(p)
+	return nil
 }
 
 func (p *ExpressionStatement) Type() StatementType {

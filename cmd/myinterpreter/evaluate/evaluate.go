@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/core"
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/errors"
+	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/statement"
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/tokenize"
 	"math"
 	"os"
@@ -11,9 +12,22 @@ import (
 )
 
 type Evaluator struct {
+	env *statement.Environment
+}
+
+func NewEvaluator(env *statement.Environment) *Evaluator {
+	return &Evaluator{env: env}
 }
 
 var _ core.ExprVisitor = &Evaluator{}
+
+func (v *Evaluator) VisitVarExpr(expr *core.VarExpression) interface{} {
+	err, i := v.env.GetKey(expr.Name.Lexeme)
+	if err != nil {
+		return nil
+	}
+	return i
+}
 
 func (v *Evaluator) VisitBinaryExpr(expr *core.BinaryExpression) interface{} {
 	rightVal := expr.Right.Accept(v)

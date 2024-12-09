@@ -3,11 +3,14 @@ package parser
 import (
 	"fmt"
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/core"
+	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/statement"
 	"math"
 	"strings"
 )
 
-type VisitorImpl struct{}
+type VisitorImpl struct {
+	env *statement.Environment
+}
 
 var _ core.ExprVisitor = &VisitorImpl{}
 
@@ -47,4 +50,12 @@ func (v *VisitorImpl) VisitLiteralExpr(expr *core.LiteralExpression) interface{}
 
 func (v *VisitorImpl) VisitUnaryExpr(expr *core.UnaryExpression) interface{} {
 	return v.parenthesize(expr.Operator.Lexeme, expr.Right)
+}
+
+func (v *VisitorImpl) VisitVarExpr(expr *core.VarExpression) interface{} {
+	err, i := v.env.GetKey(expr.Name.Lexeme)
+	if err != nil {
+		return nil
+	}
+	return i
 }

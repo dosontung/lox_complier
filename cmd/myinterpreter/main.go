@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/core"
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/evaluate"
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/parser"
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/statement"
@@ -76,8 +75,9 @@ func main() {
 	}
 
 	if command == "run" {
-		evaluator := &evaluate.Evaluator{}
-		interpreter := statement.NewInterpreter(evaluator)
+		env := statement.NewEnvironment()
+		evaluator := evaluate.NewEvaluator(env)
+		interpreter := statement.NewInterpreter(evaluator, env)
 		tkn.Scan(fileContents)
 		prs := parser.NewParser(tkn.Tokens())
 		stmtList := prs.ParseStmt()
@@ -86,11 +86,7 @@ func main() {
 			os.Exit(65)
 		}
 		for _, stmt := range stmtList {
-			if stmt.Type() == core.EXPRESSION {
-				interpreter.Interpret(stmt)
-				continue
-			}
-			fmt.Println(interpreter.Interpret(stmt))
+			interpreter.Interpret(stmt)
 		}
 
 	}

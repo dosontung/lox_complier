@@ -7,8 +7,26 @@ import (
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/tokenize"
 )
 
+/*
+program        → declaration * EOF ;
+declaration    → varDecl | statement ;
+varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ;
+statement      → exprStmt | printStmt ;
+expression     → equality ;
+equality       → comparison ( ( "!=" | "==" ) comparison )* ;
+comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
+term           → factor ( ( "-" | "+" ) factor )* ;
+factor         → unary ( ( "/" | "*" ) unary )* ;
+unary          → ( "!" | "-" ) unary
+               |    primary;
+primary        → NUMBER | STRING | "true" | "false" | "nil"
+               | "(" expression ")"
+               | IDENTIFIER ;
+*/
+
 type Parser struct {
-	tokens  []*tokenize.Token
+	tokens []*tokenize.Token
+	//env     *Environment
 	current int
 	err     error
 }
@@ -20,9 +38,35 @@ func NewParser(tokens []*tokenize.Token) *Parser {
 func (parser *Parser) ParseStmt() []core.Statement {
 	out := make([]core.Statement, 0)
 	for !parser.isEnd() {
-		out = append(out, parser.printStatement())
+		out = append(out, parser.declaration())
 	}
 	return out
+}
+
+func (parser *Parser) declaration() core.Statement {
+	token := parser.currentToken()
+	if token.Type == tokenize.VAR {
+		parser.nextToken()
+		nameToken := parser.currentToken()
+		parser.nextToken()
+		exprToken := parser.currentToken()
+		var stmt core.Statement
+		if nameToken.Type == tokenize.IDENTIFIER && exprToken.Type == tokenize.EQUAL {
+			parser.nextToken()
+			stmt = &core.VarDeclarationStatement{Name: nameToken, Expr: parser.expression()}
+		} else if nameToken.Type == tokenize.IDENTIFIER {
+			parser.previous()
+			stmt = &core.VarDeclarationStatement{Name: nameToken}
+		}
+		stmtTrailing := parser.currentToken()
+		if stmtTrailing.Type == tokenize.SEMICOLON {
+			parser.nextToken()
+			return stmt
+		}
+		return nil
+	}
+
+	return parser.printStatement()
 }
 
 func (parser *Parser) printStatement() core.Statement {
@@ -61,6 +105,19 @@ func (parser *Parser) currentToken() *tokenize.Token {
 	return parser.tokens[parser.current]
 }
 
+func (parser *Parser) peekToken() *tokenize.Token {
+	if parser.current < len(parser.tokens) {
+		return parser.tokens[parser.current+1]
+	}
+	return parser.tokens[len(parser.tokens)-1]
+}
+
+func (parser *Parser) previous() {
+	if parser.current > 0 {
+		parser.current = parser.current - 1
+	}
+
+}
 func (parser *Parser) Error() error {
 	return parser.err
 }
@@ -154,6 +211,8 @@ func (parser *Parser) primary() core.Expression {
 		return &core.LiteralExpression{Value: token.Literal}
 	case tokenize.NIL:
 		return &core.LiteralExpression{Value: "nil"}
+	case tokenize.IDENTIFIER:
+		return &core.VarExpression{Name: token}
 	case tokenize.LEFT_PAREN:
 		expr := &core.GroupExpression{Expr: parser.expression()}
 		if parser.nextToken().Type == tokenize.RIGHT_PAREN {

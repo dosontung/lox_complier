@@ -1,1 +1,2 @@
-print;
+var test = "123123";
+print test;

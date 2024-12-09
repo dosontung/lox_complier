@@ -1,23 +1,34 @@
 package statement
 
 import (
+	"fmt"
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/core"
 )
 
 type Interpreter struct {
 	Evaluator core.ExprVisitor
+	env       *Environment
 }
 
-func (i *Interpreter) VisitExpressionStmt(statement *core.ExpressionStatement) interface{} {
-	return i.valuate(statement.Expr)
+func (i *Interpreter) VisitVarDeclarationStmt(statement *core.VarDeclarationStatement) {
+	if statement.Expr != nil {
+		value := i.valuate(statement.Expr)
+		i.env.SetKey(statement.Name.Lexeme, value)
+	}
+}
+
+func (i *Interpreter) VisitExpressionStmt(statement *core.ExpressionStatement) {
+	i.valuate(statement.Expr)
 }
 
 func (i *Interpreter) VisitPrintStmt(statement *core.PrintStatement) interface{} {
-	return i.valuate(statement.Expr)
+	value := i.valuate(statement.Expr)
+	fmt.Println(value)
+	return value
 }
 
-func NewInterpreter(eval core.ExprVisitor) *Interpreter {
-	return &Interpreter{Evaluator: eval}
+func NewInterpreter(eval core.ExprVisitor, env *Environment) *Interpreter {
+	return &Interpreter{Evaluator: eval, env: env}
 }
 
 func (i *Interpreter) valuate(statement core.Expression) interface{} {
