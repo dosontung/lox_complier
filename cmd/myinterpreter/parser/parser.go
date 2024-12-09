@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/core"
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/tokenize"
+	"os"
 )
 
 /*
@@ -55,7 +56,6 @@ func (parser *Parser) declaration() core.Statement {
 			parser.nextToken()
 			stmt = &core.VarDeclarationStatement{Name: nameToken, Expr: parser.expression()}
 		} else if nameToken.Type == tokenize.IDENTIFIER {
-			parser.previous()
 			stmt = &core.VarDeclarationStatement{Name: nameToken}
 		}
 		stmtTrailing := parser.currentToken()
@@ -63,7 +63,8 @@ func (parser *Parser) declaration() core.Statement {
 			parser.nextToken()
 			return stmt
 		}
-		return nil
+		//TODO: How to fix this
+		os.Exit(-1)
 	}
 
 	return parser.printStatement()

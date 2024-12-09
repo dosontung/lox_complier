@@ -26,6 +26,9 @@ func (v *Evaluator) VisitVarExpr(expr *core.VarExpression) interface{} {
 	if err != nil {
 		v.raiseError(errors.UndefinedVar, fmt.Sprintf(" '%s'.", expr.Name.Lexeme))
 	}
+	if i == nil {
+		return "nil"
+	}
 	return i
 }
 

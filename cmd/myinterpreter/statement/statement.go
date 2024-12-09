@@ -14,7 +14,9 @@ func (i *Interpreter) VisitVarDeclarationStmt(statement *core.VarDeclarationStat
 	if statement.Expr != nil {
 		value := i.valuate(statement.Expr)
 		i.env.SetKey(statement.Name.Lexeme, value)
+		return
 	}
+	i.env.SetKey(statement.Name.Lexeme, nil)
 }
 
 func (i *Interpreter) VisitExpressionStmt(statement *core.ExpressionStatement) {
