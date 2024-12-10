@@ -18,12 +18,13 @@ const (
 	BINARY   ExpressionType = "BINARY"
 	GROUPING ExpressionType = "GROUPING"
 	VARIABLE ExpressionType = "VARIABLE"
+	ASSIGN   ExpressionType = "ASSIGN"
 )
 
 const (
-	PRINT       StatementType = "PRINT"
-	EXPRESSION  StatementType = "EXPRESSION"
-	DECLARATION StatementType = "DECLARATION"
+	PRINT           StatementType = "PRINT"
+	EXPRESSION      StatementType = "EXPRESSION"
+	VAR_DECLARATION StatementType = "VAR_DECLARATION"
 )
 
 type Expression interface {
@@ -37,6 +38,7 @@ type ExprVisitor interface {
 	VisitLiteralExpr(*LiteralExpression) interface{}
 	VisitUnaryExpr(*UnaryExpression) interface{}
 	VisitVarExpr(*VarExpression) interface{}
+	VisitAssignExpr(*AssignExpression) interface{}
 }
 
 type Statement interface {

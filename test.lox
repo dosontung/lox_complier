@@ -1,1 +1,6 @@
-var test;
+var a;
+var b = 2;
+a = b;
+print "ASDASDAD";
+var a = b = 1;
+print a;

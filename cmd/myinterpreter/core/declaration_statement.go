@@ -13,7 +13,7 @@ func (p *VarDeclarationStatement) Accept(visitor StatementVisitor) interface{} {
 }
 
 func (p *VarDeclarationStatement) Type() StatementType {
-	return EXPRESSION
+	return VAR_DECLARATION
 }
 
 var _ Statement = (*VarDeclarationStatement)(nil)

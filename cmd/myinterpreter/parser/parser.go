@@ -13,7 +13,9 @@ program        → declaration * EOF ;
 declaration    → varDecl | statement ;
 varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ;
 statement      → exprStmt | printStmt ;
-expression     → equality ;
+expression     → assignment ;
+assignment     → IDENTIFIER "=" assignment
+               | equality ;
 equality       → comparison ( ( "!=" | "==" ) comparison )* ;
 comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
 term           → factor ( ( "-" | "+" ) factor )* ;
@@ -34,6 +36,44 @@ type Parser struct {
 
 func NewParser(tokens []*tokenize.Token) *Parser {
 	return &Parser{tokens: tokens, current: 0}
+}
+
+func (parser *Parser) nextToken() *tokenize.Token {
+	if parser.current < len(parser.tokens) {
+		parser.current++
+	}
+	return parser.tokens[parser.current-1]
+}
+
+func (parser *Parser) currentToken() *tokenize.Token {
+	if parser.current >= len(parser.tokens) {
+		return parser.tokens[len(parser.tokens)-1]
+	}
+	return parser.tokens[parser.current]
+}
+
+func (parser *Parser) peekToken() *tokenize.Token {
+	if parser.current < len(parser.tokens) {
+		return parser.tokens[parser.current+1]
+	}
+	return parser.tokens[len(parser.tokens)-1]
+}
+
+func (parser *Parser) previous() {
+	if parser.current > 0 {
+		parser.current = parser.current - 1
+	}
+
+}
+func (parser *Parser) Error() error {
+	return parser.err
+}
+func (parser *Parser) isEnd() bool {
+	return parser.current >= len(parser.tokens) || parser.tokens[parser.current].Type == tokenize.EOF
+}
+
+func (parser *Parser) Parse() core.Expression {
+	return parser.expression()
 }
 
 func (parser *Parser) ParseStmt() []core.Statement {
@@ -88,48 +128,20 @@ func (parser *Parser) printStatement() core.Statement {
 	return nil
 
 }
-func (parser *Parser) Parse() core.Expression {
-	return parser.expression()
-}
-
-func (parser *Parser) nextToken() *tokenize.Token {
-	if parser.current < len(parser.tokens) {
-		parser.current++
-	}
-	return parser.tokens[parser.current-1]
-}
-
-func (parser *Parser) currentToken() *tokenize.Token {
-	if parser.current >= len(parser.tokens) {
-		return parser.tokens[len(parser.tokens)-1]
-	}
-	return parser.tokens[parser.current]
-}
-
-func (parser *Parser) peekToken() *tokenize.Token {
-	if parser.current < len(parser.tokens) {
-		return parser.tokens[parser.current+1]
-	}
-	return parser.tokens[len(parser.tokens)-1]
-}
-
-func (parser *Parser) previous() {
-	if parser.current > 0 {
-		parser.current = parser.current - 1
-	}
-
-}
-func (parser *Parser) Error() error {
-	return parser.err
-}
-func (parser *Parser) isEnd() bool {
-	return parser.current >= len(parser.tokens) || parser.tokens[parser.current].Type == tokenize.EOF
-}
 
 func (parser *Parser) expression() core.Expression {
-	return parser.equality()
+	return parser.assignment()
 }
 
+func (parser *Parser) assignment() core.Expression {
+	token := parser.currentToken()
+	if token.Type == tokenize.IDENTIFIER && parser.peekToken().Type == tokenize.EQUAL {
+		parser.nextToken()
+		parser.nextToken()
+		return &core.AssignExpression{Name: token, Expr: parser.assignment()}
+	}
+	return parser.equality()
+}
 func (parser *Parser) equality() core.Expression {
 	expr := parser.comparison()
 	for !parser.isEnd() {

@@ -59,3 +59,8 @@ func (v *VisitorImpl) VisitVarExpr(expr *core.VarExpression) interface{} {
 	}
 	return i
 }
+
+func (v *VisitorImpl) VisitAssignExpr(expr *core.AssignExpression) interface{} {
+	// TODO: Implement me >>>
+	return nil
+}

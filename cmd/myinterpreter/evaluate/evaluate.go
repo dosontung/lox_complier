@@ -21,6 +21,13 @@ func NewEvaluator(env *statement.Environment) *Evaluator {
 
 var _ core.ExprVisitor = &Evaluator{}
 
+func (v *Evaluator) VisitAssignExpr(expr *core.AssignExpression) interface{} {
+	value := v.Evaluate(expr.Expr)
+	v.env.SetKey(expr.Name.Lexeme, value)
+
+	return value
+}
+
 func (v *Evaluator) VisitVarExpr(expr *core.VarExpression) interface{} {
 	err, i := v.env.GetKey(expr.Name.Lexeme)
 	if err != nil {
