@@ -25,6 +25,7 @@ const (
 	PRINT           StatementType = "PRINT"
 	EXPRESSION      StatementType = "EXPRESSION"
 	VAR_DECLARATION StatementType = "VAR_DECLARATION"
+	BLOCK           StatementType = "BLOCK"
 )
 
 type Expression interface {
@@ -50,4 +51,5 @@ type StatementVisitor interface {
 	VisitPrintStmt(statement *PrintStatement) interface{}
 	VisitExpressionStmt(statement *ExpressionStatement)
 	VisitVarDeclarationStmt(statement *VarDeclarationStatement)
+	VisitBlockStmt(statement *BlockStatement)
 }

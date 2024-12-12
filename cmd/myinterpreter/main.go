@@ -2,9 +2,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/evaluate"
+	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/interpreter"
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/parser"
-	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/statement"
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/tokenize"
 	"os"
 )
@@ -62,7 +61,7 @@ func main() {
 	}
 
 	if command == "evaluate" {
-		evaluator := &evaluate.Evaluator{}
+		evaluator := &interpreter.Interpreter{}
 		tkn.Scan(fileContents)
 		prs := parser.NewParser(tkn.Tokens())
 		expression := prs.Parse()
@@ -75,9 +74,8 @@ func main() {
 	}
 
 	if command == "run" {
-		env := statement.NewEnvironment()
-		evaluator := evaluate.NewEvaluator(env)
-		interpreter := statement.NewInterpreter(evaluator, env)
+		env := interpreter.NewEnvironment(nil)
+		interpreter := interpreter.NewInterpreter(env)
 		tkn.Scan(fileContents)
 		prs := parser.NewParser(tkn.Tokens())
 		stmtList := prs.ParseStmt()

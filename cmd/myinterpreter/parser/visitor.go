@@ -3,13 +3,13 @@ package parser
 import (
 	"fmt"
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/core"
-	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/statement"
+	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/interpreter"
 	"math"
 	"strings"
 )
 
 type VisitorImpl struct {
-	env *statement.Environment
+	env *interpreter.Environment
 }
 
 var _ core.ExprVisitor = &VisitorImpl{}

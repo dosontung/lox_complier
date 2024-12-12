@@ -1,45 +1,58 @@
-package evaluate
+package interpreter
 
 import (
 	"fmt"
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/core"
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/errors"
-	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/statement"
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/tokenize"
 	"math"
 	"os"
 	"reflect"
 )
 
-type Evaluator struct {
-	env *statement.Environment
+var _ core.ExprVisitor = &Interpreter{}
+
+func (v *Interpreter) raiseError(err errors.CError, etcs ...string) {
+	fmt.Fprint(os.Stderr, err)
+	for _, etc := range etcs {
+		fmt.Fprint(os.Stderr, etc)
+	}
+	fmt.Print("\n")
+	os.Exit(70)
 }
 
-func NewEvaluator(env *statement.Environment) *Evaluator {
-	return &Evaluator{env: env}
-}
-
-var _ core.ExprVisitor = &Evaluator{}
-
-func (v *Evaluator) VisitAssignExpr(expr *core.AssignExpression) interface{} {
+func (v *Interpreter) VisitAssignExpr(expr *core.AssignExpression) interface{} {
 	value := v.Evaluate(expr.Expr)
-	v.env.SetKey(expr.Name.Lexeme, value)
-
+	if err, _ := v.env.GetKey(expr.Name.Lexeme); err == nil {
+		v.env.SetKey(expr.Name.Lexeme, value)
+		return value
+	}
+	if v.env.Enclosing != nil {
+		if err, _ := v.env.GetKey(expr.Name.Lexeme); err == nil {
+			v.env.Enclosing.SetKey(expr.Name.Lexeme, value)
+			return value
+		}
+	}
+	os.Exit(70)
 	return value
 }
 
-func (v *Evaluator) VisitVarExpr(expr *core.VarExpression) interface{} {
-	err, i := v.env.GetKey(expr.Name.Lexeme)
-	if err != nil {
-		v.raiseError(errors.UndefinedVar, fmt.Sprintf(" '%s'.", expr.Name.Lexeme))
+func (v *Interpreter) VisitVarExpr(expr *core.VarExpression) interface{} {
+	var i interface{}
+
+	if err, value := v.env.GetKey(expr.Name.Lexeme); err == nil {
+		return value
 	}
-	if i == nil {
-		return "nil"
+	if v.env.Enclosing != nil {
+		if err, value := v.env.Enclosing.GetKey(expr.Name.Lexeme); err == nil {
+			return value
+		}
 	}
+	v.raiseError(errors.UndefinedVar, fmt.Sprintf(" '%s'.", expr.Name.Lexeme))
 	return i
 }
 
-func (v *Evaluator) VisitBinaryExpr(expr *core.BinaryExpression) interface{} {
+func (v *Interpreter) VisitBinaryExpr(expr *core.BinaryExpression) interface{} {
 	rightVal := expr.Right.Accept(v)
 	leftVal := expr.Left.Accept(v)
 	sameType, isNumber := false, false
@@ -103,11 +116,11 @@ func (v *Evaluator) VisitBinaryExpr(expr *core.BinaryExpression) interface{} {
 
 }
 
-func (v *Evaluator) VisitGroupingExpr(expr *core.GroupExpression) interface{} {
+func (v *Interpreter) VisitGroupingExpr(expr *core.GroupExpression) interface{} {
 	return expr.Expr.Accept(v)
 }
 
-func (v *Evaluator) VisitLiteralExpr(expr *core.LiteralExpression) interface{} {
+func (v *Interpreter) VisitLiteralExpr(expr *core.LiteralExpression) interface{} {
 	strVal := expr.Value
 	switch strVal.(type) {
 	case string:
@@ -121,7 +134,7 @@ func (v *Evaluator) VisitLiteralExpr(expr *core.LiteralExpression) interface{} {
 	return strVal
 }
 
-func (v *Evaluator) VisitUnaryExpr(expr *core.UnaryExpression) interface{} {
+func (v *Interpreter) VisitUnaryExpr(expr *core.UnaryExpression) interface{} {
 	strVal := expr.Right.Accept(v)
 	switch expr.Operator.Type {
 	case tokenize.BANG:
@@ -138,15 +151,6 @@ func (v *Evaluator) VisitUnaryExpr(expr *core.UnaryExpression) interface{} {
 	}
 }
 
-func (v *Evaluator) Evaluate(expr core.Expression) interface{} {
+func (v *Interpreter) Evaluate(expr core.Expression) interface{} {
 	return expr.Accept(v)
-}
-
-func (v *Evaluator) raiseError(err errors.CError, etcs ...string) {
-	fmt.Fprint(os.Stderr, err)
-	for _, etc := range etcs {
-		fmt.Fprint(os.Stderr, etc)
-	}
-	fmt.Print("\n")
-	os.Exit(70)
 }
