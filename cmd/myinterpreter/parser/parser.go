@@ -13,8 +13,12 @@ program        → declaration * EOF ;
 declaration    → varDecl | statement ;
 varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ;
 statement      → exprStmt
+               | ifStmt
                | printStmt
                | block ;
+
+ifStmt         → "if" "(" expression ")" statement
+               ( "else" statement )? ;
 
 block          → "{" declaration* "}" ;
 expression     → assignment ;
@@ -82,6 +86,16 @@ func (parser *Parser) match(tokenTypes ...tokenize.TokenType) bool {
 	}
 	return false
 }
+
+func (parser *Parser) mustMatch(tokenType tokenize.TokenType, err string) bool {
+	current := parser.currentToken()
+	if tokenType == current.Type {
+		parser.next()
+		return true
+	}
+	parser.raiseError(err)
+	return false
+}
 func (parser *Parser) check(tokenTypes ...tokenize.TokenType) bool {
 	current := parser.currentToken()
 	for _, tokenType := range tokenTypes {
@@ -91,16 +105,11 @@ func (parser *Parser) check(tokenTypes ...tokenize.TokenType) bool {
 	}
 	return false
 }
-
-func (parser *Parser) consume(tokenType tokenize.TokenType) bool {
-	current := parser.currentToken()
-	if current.Type == tokenType {
-		parser.next()
-		return true
-	}
-	return false
+func (parser *Parser) raiseError(err string) {
+	parser.err = errors.New(err)
+	fmt.Fprintln(os.Stderr, err)
+	os.Exit(65)
 }
-
 func (parser *Parser) Error() error {
 	return parser.err
 }
@@ -135,12 +144,7 @@ func (parser *Parser) declaration() core.Statement {
 		}
 		//TODO:  Error at here ????
 		return nil
-	case parser.match(tokenize.LEFT_BRACE):
-		//fmt.Println("GOOOG")
-		blockStmt := parser.block()
-		return blockStmt
 
-		return nil
 	default:
 		return parser.statement()
 	}
@@ -149,17 +153,35 @@ func (parser *Parser) declaration() core.Statement {
 
 func (parser *Parser) statement() core.Statement {
 	var stmt core.Statement
-	if parser.match(tokenize.PRINT) {
+	switch {
+	case parser.match(tokenize.PRINT):
 		stmt = &core.PrintStatement{Expr: parser.expression()}
-
-	} else {
+	case parser.match(tokenize.LEFT_BRACE):
+		//fmt.Println("GOOOG")
+		blockStmt := parser.block()
+		return blockStmt
+	case parser.match(tokenize.IF):
+		return parser.ifStatement()
+	default:
 		stmt = &core.ExpressionStatement{Expr: parser.expression()}
 	}
-
 	if parser.match(tokenize.SEMICOLON) {
 		return stmt
 	}
 	return nil
+
+}
+
+func (parser *Parser) ifStatement() core.Statement {
+	parser.mustMatch(tokenize.LEFT_PAREN, "Expected \"(\".")
+	expr := parser.expression()
+	parser.mustMatch(tokenize.RIGHT_PAREN, "Expected \")\".")
+	thenBranch := parser.statement()
+	var elseBranch core.Statement
+	if parser.match(tokenize.ELSE) {
+		elseBranch = parser.statement()
+	}
+	return &core.IFElseStatement{Expr: expr, ThenBranch: thenBranch, ElseBranch: elseBranch}
 
 }
 

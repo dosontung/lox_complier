@@ -1,14 +1,1 @@
-{
-  var bar = "outer bar";
-  var quz = "outer quz";
-  {
-    bar = "modified bar";
-    var quz = "inner quz";
-    print bar;
-    print quz;
-  }
-  print bar;
-  print quz;
-}
-print quz;
-
+if (false) { print "bar";}

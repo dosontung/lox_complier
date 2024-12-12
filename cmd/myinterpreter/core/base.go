@@ -26,6 +26,7 @@ const (
 	EXPRESSION      StatementType = "EXPRESSION"
 	VAR_DECLARATION StatementType = "VAR_DECLARATION"
 	BLOCK           StatementType = "BLOCK"
+	IF_ELSE         StatementType = "IF_ELSE"
 )
 
 type Expression interface {
@@ -52,4 +53,5 @@ type StatementVisitor interface {
 	VisitExpressionStmt(statement *ExpressionStatement)
 	VisitVarDeclarationStmt(statement *VarDeclarationStatement)
 	VisitBlockStmt(statement *BlockStatement)
+	VisitIfElseStmt(statement *IFElseStatement)
 }

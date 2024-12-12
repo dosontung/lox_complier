@@ -7,6 +7,19 @@ import (
 
 var _ core.StatementVisitor = (*Interpreter)(nil)
 
+func (v *Interpreter) VisitIfElseStmt(statement *core.IFElseStatement) {
+	expr := v.Evaluate(statement.Expr)
+
+	if expr.(bool) {
+		v.Interpret(statement.ThenBranch)
+	} else {
+		if statement.ElseBranch != nil {
+			v.Interpret(statement.ElseBranch)
+		}
+
+	}
+}
+
 func (v *Interpreter) VisitBlockStmt(statement *core.BlockStatement) {
 	v.executeBlock(statement, NewEnvironment(v.env))
 }
