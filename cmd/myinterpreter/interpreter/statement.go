@@ -14,7 +14,6 @@ func (v *Interpreter) VisitBlockStmt(statement *core.BlockStatement) {
 func (v *Interpreter) executeBlock(statement *core.BlockStatement, env *Environment) {
 	previousEnv := v.env
 	v.env = env
-	fmt.Println(previousEnv)
 	for _, stmt := range statement.Statements {
 		v.Interpret(stmt)
 	}

@@ -23,15 +23,13 @@ func (v *Interpreter) raiseError(err errors.CError, etcs ...string) {
 
 func (v *Interpreter) VisitAssignExpr(expr *core.AssignExpression) interface{} {
 	value := v.Evaluate(expr.Expr)
-	if err, _ := v.env.GetKey(expr.Name.Lexeme); err == nil {
-		v.env.SetKey(expr.Name.Lexeme, value)
-		return value
-	}
-	if v.env.Enclosing != nil {
-		if err, _ := v.env.GetKey(expr.Name.Lexeme); err == nil {
-			v.env.Enclosing.SetKey(expr.Name.Lexeme, value)
+	env := v.env
+	for env != nil {
+		if err, _ := env.GetKey(expr.Name.Lexeme); err == nil {
+			env.SetKey(expr.Name.Lexeme, value)
 			return value
 		}
+		env = env.Enclosing
 	}
 	os.Exit(70)
 	return value
@@ -46,7 +44,7 @@ func (v *Interpreter) VisitVarExpr(expr *core.VarExpression) interface{} {
 		}
 		env = env.Enclosing
 	}
-	
+
 	v.raiseError(errors.UndefinedVar, fmt.Sprintf(" '%s'.", expr.Name.Lexeme))
 	return i
 }
