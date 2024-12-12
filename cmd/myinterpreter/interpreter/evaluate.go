@@ -39,15 +39,14 @@ func (v *Interpreter) VisitAssignExpr(expr *core.AssignExpression) interface{} {
 
 func (v *Interpreter) VisitVarExpr(expr *core.VarExpression) interface{} {
 	var i interface{}
-
-	if err, value := v.env.GetKey(expr.Name.Lexeme); err == nil {
-		return value
-	}
-	if v.env.Enclosing != nil {
-		if err, value := v.env.Enclosing.GetKey(expr.Name.Lexeme); err == nil {
+	env := v.env
+	for env != nil {
+		if err, value := env.GetKey(expr.Name.Lexeme); err == nil {
 			return value
 		}
+		env = env.Enclosing
 	}
+	
 	v.raiseError(errors.UndefinedVar, fmt.Sprintf(" '%s'.", expr.Name.Lexeme))
 	return i
 }

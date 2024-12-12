@@ -173,7 +173,7 @@ func (parser *Parser) block() core.Statement {
 	if parser.match(tokenize.RIGHT_BRACE) {
 		return &core.BlockStatement{Statements: blocks}
 	}
-	parser.err = errors.New("Expect '}' after value.")
+	parser.err = errors.New("Expect '}' after block.")
 	return nil
 
 }
