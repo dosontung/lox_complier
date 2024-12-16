@@ -9,15 +9,20 @@ var _ core.StatementVisitor = (*Interpreter)(nil)
 
 func (v *Interpreter) VisitIfElseStmt(statement *core.IFElseStatement) {
 	expr := v.Evaluate(statement.Expr)
-
-	if expr.(bool) {
+	if lvl, ok := expr.(bool); ok && lvl {
 		v.Interpret(statement.ThenBranch)
-	} else {
-		if statement.ElseBranch != nil {
-			v.Interpret(statement.ElseBranch)
-		}
-
+		return
+	} else if lvl, ok := expr.(float64); ok && lvl != 0 {
+		v.Interpret(statement.ThenBranch)
+		return
+	} else if _, ok := expr.(string); ok {
+		v.Interpret(statement.ThenBranch)
+		return
 	}
+	if statement.ElseBranch != nil {
+		v.Interpret(statement.ElseBranch)
+	}
+
 }
 
 func (v *Interpreter) VisitBlockStmt(statement *core.BlockStatement) {

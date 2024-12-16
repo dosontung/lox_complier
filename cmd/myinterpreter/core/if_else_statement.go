@@ -12,7 +12,7 @@ func (p *IFElseStatement) Accept(visitor StatementVisitor) interface{} {
 }
 
 func (p *IFElseStatement) Type() StatementType {
-	return BLOCK
+	return IF_ELSE
 }
 
 var _ Statement = (*IFElseStatement)(nil)

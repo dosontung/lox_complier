@@ -23,7 +23,9 @@ ifStmt         → "if" "(" expression ")" statement
 block          → "{" declaration* "}" ;
 expression     → assignment ;
 assignment     → IDENTIFIER "=" assignment
-               | equality ;
+               | logic_or ;
+logic_or       → logic_and ( "or" logic_and )* ;
+logic_and      → equality ( "and" equality )* ;
 equality       → comparison ( ( "!=" | "==" ) comparison )* ;
 comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
 term           → factor ( ( "-" | "+" ) factor )* ;
@@ -205,15 +207,34 @@ func (parser *Parser) expression() core.Expression {
 }
 
 func (parser *Parser) assignment() core.Expression {
-	expr := parser.equality()
+	expr := parser.logicOr()
 	if parser.match(tokenize.EQUAL) {
 		if expr.Type() == core.VARIABLE {
 			return &core.AssignExpression{Name: expr.(*core.VarExpression).Name, Expr: parser.assignment()}
 		}
-
 	}
 	return expr
 }
+
+func (parser *Parser) logicOr() core.Expression {
+	expr := parser.logicAnd()
+	for parser.match(tokenize.OR) {
+		expr = &core.LogicalExpression{Left: expr, Operator: parser.previousToken(), Right: parser.logicAnd()}
+	}
+	return expr
+
+}
+
+func (parser *Parser) logicAnd() core.Expression {
+	expr := parser.equality()
+	for parser.match(tokenize.AND) {
+		expr = &core.LogicalExpression{Left: expr, Operator: parser.previousToken(), Right: parser.equality()}
+	}
+
+	return expr
+
+}
+
 func (parser *Parser) equality() core.Expression {
 	expr := parser.comparison()
 	for !parser.isEnd() {
@@ -289,10 +310,10 @@ func (parser *Parser) primary() core.Expression {
 		if parser.match(tokenize.RIGHT_PAREN) {
 			return expr
 		}
-		parser.err = errors.New(fmt.Sprintf("[line %d] Error at '%s': Expect expression.", parser.currentToken().Line, parser.currentToken().Lexeme))
+		parser.raiseError(fmt.Sprintf("[line %d] Error at '%s': Expect expression.", parser.currentToken().Line, parser.currentToken().Lexeme))
 		return nil
 	default:
-		parser.err = errors.New(fmt.Sprintf("[line %d] Error at '%s': Expect expression.", token.Line, token.Lexeme))
+		parser.raiseError(fmt.Sprintf("[line %d] Error at '%s': Expect expression.", token.Line, token.Lexeme))
 		return nil
 	}
 	return expr

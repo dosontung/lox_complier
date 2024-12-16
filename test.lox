@@ -1,1 +1,1 @@
-if (false) { print "bar";}
+ print false or false or false ;

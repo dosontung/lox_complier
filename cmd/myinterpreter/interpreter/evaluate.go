@@ -21,6 +21,20 @@ func (v *Interpreter) raiseError(err errors.CError, etcs ...string) {
 	os.Exit(70)
 }
 
+func (v *Interpreter) VisitLogicalExpr(expr *core.LogicalExpression) interface{} {
+	lv := v.Evaluate(expr.Left)
+	if lvl, ok := lv.(bool); ok && lvl == true {
+		return lvl
+	}
+	if lvl, ok := lv.(float64); ok && lvl != 0 {
+		return lvl
+	}
+	if _, ok := lv.(string); ok {
+		return lv
+	}
+	return v.Evaluate(expr.Right)
+}
+
 func (v *Interpreter) VisitAssignExpr(expr *core.AssignExpression) interface{} {
 	value := v.Evaluate(expr.Expr)
 	env := v.env
@@ -120,8 +134,8 @@ func (v *Interpreter) VisitGroupingExpr(expr *core.GroupExpression) interface{} 
 func (v *Interpreter) VisitLiteralExpr(expr *core.LiteralExpression) interface{} {
 	strVal := expr.Value
 	switch strVal.(type) {
-	case string:
-		return strVal
+	//case string:
+	//	return strVal
 	case float64:
 		if strVal == math.Trunc(strVal.(float64)) {
 			return math.Trunc(strVal.(float64))

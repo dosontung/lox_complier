@@ -14,6 +14,7 @@ operator       → "==" | "!=" | "<" | "<=" | ">" | ">="
 
 const (
 	LITERAL  ExpressionType = "LITERAL"
+	LOGICAL  ExpressionType = "LOGICAL"
 	UNARY    ExpressionType = "UNARY"
 	BINARY   ExpressionType = "BINARY"
 	GROUPING ExpressionType = "GROUPING"
@@ -41,6 +42,7 @@ type ExprVisitor interface {
 	VisitUnaryExpr(*UnaryExpression) interface{}
 	VisitVarExpr(*VarExpression) interface{}
 	VisitAssignExpr(*AssignExpression) interface{}
+	VisitLogicalExpr(*LogicalExpression) interface{}
 }
 
 type Statement interface {

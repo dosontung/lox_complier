@@ -12,6 +12,11 @@ type VisitorImpl struct {
 	env *interpreter.Environment
 }
 
+func (v *VisitorImpl) VisitLogicalExpr(expression *core.LogicalExpression) interface{} {
+	//TODO implement me
+	panic("implement me")
+}
+
 var _ core.ExprVisitor = &VisitorImpl{}
 
 func (v *VisitorImpl) parenthesize(name string, exprs ...core.Expression) string {
