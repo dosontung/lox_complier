@@ -56,6 +56,7 @@ func main() {
 			fmt.Fprintln(os.Stderr, prs.Error())
 			os.Exit(65)
 		}
+		
 		fmt.Println(expression.Accept(visitorImp).(string))
 
 	}
@@ -69,7 +70,12 @@ func main() {
 			fmt.Fprintln(os.Stderr, prs.Error())
 			os.Exit(65)
 		}
-		fmt.Println(evaluator.Evaluate(expression))
+		val := evaluator.Evaluate(expression)
+		if val == nil {
+			fmt.Println("nil")
+		} else {
+			fmt.Println(val)
+		}
 
 	}
 

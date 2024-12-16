@@ -302,7 +302,7 @@ func (parser *Parser) primary() core.Expression {
 	case parser.match(tokenize.NUMBER, tokenize.STRING):
 		expr = &core.LiteralExpression{Value: token.Literal}
 	case parser.match(tokenize.NIL):
-		expr = &core.LiteralExpression{Value: "nil"}
+		expr = &core.LiteralExpression{Value: nil}
 	case parser.match(tokenize.IDENTIFIER):
 		expr = &core.VarExpression{Name: token}
 	case parser.match(tokenize.LEFT_PAREN):

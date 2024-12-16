@@ -1,1 +1,1 @@
- print false or false or false ;
+if (nil and "bad") print "baz";

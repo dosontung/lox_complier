@@ -50,6 +50,9 @@ func (v *VisitorImpl) VisitLiteralExpr(expr *core.LiteralExpression) interface{}
 		}
 		return fmt.Sprintf("%v", number)
 	}
+	if expr.Value == nil {
+		return "nil"
+	}
 	return fmt.Sprintf("%v", expr.Value)
 }
 

@@ -22,19 +22,29 @@ func (v *Interpreter) raiseError(err errors.CError, etcs ...string) {
 }
 
 func (v *Interpreter) VisitLogicalExpr(expr *core.LogicalExpression) interface{} {
-	lv := v.Evaluate(expr.Left)
-	if lvl, ok := lv.(bool); ok && lvl == true {
-		return lvl
+	vl := v.Evaluate(expr.Left)
+	op := expr.Operator.Type
+	if op == tokenize.OR && v.isTrue(vl) {
+		return vl
+	} else if op == tokenize.AND && !v.isTrue(vl) {
+		return vl
+	} else {
+		return v.Evaluate(expr.Right)
 	}
-	if lvl, ok := lv.(float64); ok && lvl != 0 {
-		return lvl
-	}
-	if _, ok := lv.(string); ok {
-		return lv
-	}
-	return v.Evaluate(expr.Right)
 }
 
+func (v *Interpreter) isTrue(vl interface{}) bool {
+	if lvl, ok := vl.(bool); ok && lvl == true {
+		return true
+	}
+	if lvl, ok := vl.(float64); ok && lvl != 0 {
+		return true
+	}
+	if _, ok := vl.(string); ok {
+		return true
+	}
+	return false
+}
 func (v *Interpreter) VisitAssignExpr(expr *core.AssignExpression) interface{} {
 	value := v.Evaluate(expr.Expr)
 	env := v.env
@@ -149,11 +159,7 @@ func (v *Interpreter) VisitUnaryExpr(expr *core.UnaryExpression) interface{} {
 	strVal := expr.Right.Accept(v)
 	switch expr.Operator.Type {
 	case tokenize.BANG:
-		if strVal == false || strVal == "false" || strVal == "nil" {
-			return true
-		} else {
-			return false
-		}
+		return !v.isTrue(strVal)
 	default: // tokenize.MINUS
 		if _, ok := strVal.(float64); !ok {
 			v.raiseError(errors.OperandMustBeNumber)
