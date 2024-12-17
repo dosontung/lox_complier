@@ -7,6 +7,12 @@ import (
 
 var _ core.StatementVisitor = (*Interpreter)(nil)
 
+func (v *Interpreter) VisitWhileStmt(statement *core.WhileStatement) {
+	for v.isTrue(v.Evaluate(statement.Expr)) {
+		v.Interpret(statement.Body)
+	}
+}
+
 func (v *Interpreter) VisitIfElseStmt(statement *core.IFElseStatement) {
 	expr := v.Evaluate(statement.Expr)
 	if lvl, ok := expr.(bool); ok && lvl {

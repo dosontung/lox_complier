@@ -15,7 +15,10 @@ varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ;
 statement      → exprStmt
                | ifStmt
                | printStmt
+               | whileStmt
                | block ;
+
+whileStmt      → "while" "(" expression ")" statement ;
 
 ifStmt         → "if" "(" expression ")" statement
                ( "else" statement )? ;
@@ -164,6 +167,8 @@ func (parser *Parser) statement() core.Statement {
 		return blockStmt
 	case parser.match(tokenize.IF):
 		return parser.ifStatement()
+	case parser.match(tokenize.WHILE):
+		return parser.while()
 	default:
 		stmt = &core.ExpressionStatement{Expr: parser.expression()}
 	}
@@ -172,6 +177,13 @@ func (parser *Parser) statement() core.Statement {
 	}
 	return nil
 
+}
+func (parser *Parser) while() core.Statement {
+	parser.mustMatch(tokenize.LEFT_PAREN, "Expected \"(\".")
+	expr := parser.expression()
+	parser.mustMatch(tokenize.RIGHT_PAREN, "Expected \")\".")
+	stmt := parser.statement()
+	return &core.WhileStatement{Expr: expr, Body: stmt}
 }
 
 func (parser *Parser) ifStatement() core.Statement {
