@@ -29,6 +29,7 @@ const (
 	BLOCK           StatementType = "BLOCK"
 	IF_ELSE         StatementType = "IF_ELSE"
 	WHILE           StatementType = "WHILE"
+	FOR             StatementType = "FOR"
 )
 
 type Expression interface {
@@ -58,4 +59,5 @@ type StatementVisitor interface {
 	VisitBlockStmt(statement *BlockStatement)
 	VisitIfElseStmt(statement *IFElseStatement)
 	VisitWhileStmt(statement *WhileStatement)
+	VisitForStmt(statement *ForStatement)
 }

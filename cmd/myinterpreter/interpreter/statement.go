@@ -7,6 +7,19 @@ import (
 
 var _ core.StatementVisitor = (*Interpreter)(nil)
 
+func (v *Interpreter) VisitForStmt(statement *core.ForStatement) {
+	if statement.VarStatment != nil {
+		v.Interpret(statement.VarStatment)
+	}
+	for v.isTrue(v.Evaluate(statement.Expr1)) {
+		v.Interpret(statement.Body)
+		if statement.Expr2 != nil {
+			v.Evaluate(statement.Expr2)
+		}
+
+	}
+}
+
 func (v *Interpreter) VisitWhileStmt(statement *core.WhileStatement) {
 	for v.isTrue(v.Evaluate(statement.Expr)) {
 		v.Interpret(statement.Body)

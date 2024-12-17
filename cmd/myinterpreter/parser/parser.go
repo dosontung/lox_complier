@@ -13,10 +13,15 @@ program        → declaration * EOF ;
 declaration    → varDecl | statement ;
 varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ;
 statement      → exprStmt
+               | forStmt
                | ifStmt
                | printStmt
                | whileStmt
                | block ;
+
+forStmt        → "for" "(" ( varDecl | exprStmt | ";" )
+                 expression? ";"
+                 expression? ")" statement ;
 
 whileStmt      → "while" "(" expression ")" statement ;
 
@@ -169,6 +174,8 @@ func (parser *Parser) statement() core.Statement {
 		return parser.ifStatement()
 	case parser.match(tokenize.WHILE):
 		return parser.while()
+	case parser.match(tokenize.FOR):
+		return parser.forstmt()
 	default:
 		stmt = &core.ExpressionStatement{Expr: parser.expression()}
 	}
@@ -178,6 +185,36 @@ func (parser *Parser) statement() core.Statement {
 	return nil
 
 }
+
+func (parser *Parser) forstmt() core.Statement {
+	parser.mustMatch(tokenize.LEFT_PAREN, "Expected \"(\".")
+	var var_statement core.Statement
+	var expr1, expr2 core.Expression
+	if parser.match(tokenize.SEMICOLON) {
+		// Nothing
+	} else {
+		var_statement = parser.declaration()
+		if var_statement.Type() != core.VAR_DECLARATION && var_statement.Type() != core.EXPRESSION {
+			parser.raiseError("Unexpected statement")
+		}
+	}
+	if parser.match(tokenize.RIGHT_PAREN) {
+		return &core.ForStatement{VarStatment: var_statement, Body: parser.statement()}
+	}
+
+	expr1 = parser.expression()
+	parser.mustMatch(tokenize.SEMICOLON, "Expected \";\".")
+	if parser.match(tokenize.RIGHT_PAREN) {
+		return &core.ForStatement{VarStatment: var_statement, Expr1: expr1, Expr2: expr2, Body: parser.statement()}
+	}
+	expr2 = parser.expression()
+	if parser.match(tokenize.RIGHT_PAREN) {
+		return &core.ForStatement{VarStatment: var_statement, Expr1: expr1, Expr2: expr2, Body: parser.statement()}
+	}
+	parser.raiseError("For statement expected")
+	return nil
+}
+
 func (parser *Parser) while() core.Statement {
 	parser.mustMatch(tokenize.LEFT_PAREN, "Expected \"(\".")
 	expr := parser.expression()

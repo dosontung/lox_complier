@@ -1,1 +1,2 @@
-if (nil and "bad") print "baz";
+for (var world = 0; world < 3;) print world = world + 1;
+
