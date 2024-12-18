@@ -20,6 +20,7 @@ const (
 	GROUPING ExpressionType = "GROUPING"
 	VARIABLE ExpressionType = "VARIABLE"
 	ASSIGN   ExpressionType = "ASSIGN"
+	CALL     ExpressionType = "CALL"
 )
 
 const (
@@ -45,6 +46,7 @@ type ExprVisitor interface {
 	VisitVarExpr(*VarExpression) interface{}
 	VisitAssignExpr(*AssignExpression) interface{}
 	VisitLogicalExpr(*LogicalExpression) interface{}
+	VisitCallExpr(*CallExpression) interface{}
 }
 
 type Statement interface {

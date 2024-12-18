@@ -8,6 +8,7 @@ import (
 	"math"
 	"os"
 	"reflect"
+	"time"
 )
 
 var _ core.ExprVisitor = &Interpreter{}
@@ -19,6 +20,21 @@ func (v *Interpreter) raiseError(err errors.CError, etcs ...string) {
 	}
 	fmt.Print("\n")
 	os.Exit(70)
+}
+func (v *Interpreter) VisitCallExpr(expr *core.CallExpression) interface{} {
+	callee := expr.Callee
+	if val, ok := callee.(*core.VarExpression); ok {
+		if val.Name.Lexeme == "clock" {
+			return v.nativeCall()
+		}
+	}
+	return 0
+}
+
+func (v *Interpreter) nativeCall() interface{} {
+	now := time.Now() // current local time
+	sec := now.Unix() // number of seconds since January 1, 1970 UTC
+	return float64(sec)
 }
 
 func (v *Interpreter) VisitLogicalExpr(expr *core.LogicalExpression) interface{} {

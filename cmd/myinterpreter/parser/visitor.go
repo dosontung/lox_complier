@@ -12,6 +12,11 @@ type VisitorImpl struct {
 	env *interpreter.Environment
 }
 
+func (v *VisitorImpl) VisitCallExpr(expression *core.CallExpression) interface{} {
+	//TODO implement me
+	panic("implement me")
+}
+
 func (v *VisitorImpl) VisitLogicalExpr(expression *core.LogicalExpression) interface{} {
 	//TODO implement me
 	panic("implement me")

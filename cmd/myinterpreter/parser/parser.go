@@ -38,8 +38,10 @@ equality       → comparison ( ( "!=" | "==" ) comparison )* ;
 comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
 term           → factor ( ( "-" | "+" ) factor )* ;
 factor         → unary ( ( "/" | "*" ) unary )* ;
-unary          → ( "!" | "-" ) unary
+unary          → ( "!" | "-" ) unary | call ;
+call           → primary ( "(" arguments? ")" )* ;
                |    primary;
+arguments      → expression ( "," expression )* ;
 primary        → NUMBER | STRING | "true" | "false" | "nil"
                | "(" expression ")"
                | IDENTIFIER ;
@@ -337,9 +339,29 @@ func (parser *Parser) unary() core.Expression {
 	if parser.match(tokenize.BANG, tokenize.MINUS) {
 		return &core.UnaryExpression{Operator: parser.previousToken(), Right: parser.unary()}
 	}
-	return parser.primary()
+	return parser.call()
 }
 
+func (parser *Parser) call() core.Expression {
+	callee := parser.primary()
+	if parser.match(tokenize.LEFT_PAREN) {
+		params := parser.arguments()
+		parser.mustMatch(tokenize.RIGHT_PAREN, "Expected )")
+		return &core.CallExpression{Callee: callee, Params: params}
+	}
+	return callee
+}
+
+func (parser *Parser) arguments() []core.Expression {
+	params := make([]core.Expression, 0)
+	for !parser.check(tokenize.RIGHT_PAREN) {
+		params = append(params, parser.expression())
+		if !parser.match(tokenize.COMMA) {
+			break
+		}
+	}
+	return params
+}
 func (parser *Parser) primary() core.Expression {
 	var expr core.Expression
 	token := parser.currentToken()
