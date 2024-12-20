@@ -7,6 +7,18 @@ import (
 
 var _ core.StatementVisitor = (*Interpreter)(nil)
 
+func (v *Interpreter) VisitFuncStmt(statement *core.FuncStatement) {
+	env := v.env
+	for env != nil {
+		if err, _ := env.GetKey(statement.Name.Lexeme); err != nil {
+			env.SetKey(statement.Name.Lexeme, statement)
+		} else {
+			v.raiseError("Duplicate name!")
+		}
+		env = env.Enclosing
+	}
+}
+
 func (v *Interpreter) VisitForStmt(statement *core.ForStatement) {
 	if statement.VarStatment != nil {
 		v.Interpret(statement.VarStatment)
@@ -45,13 +57,13 @@ func (v *Interpreter) VisitIfElseStmt(statement *core.IFElseStatement) {
 }
 
 func (v *Interpreter) VisitBlockStmt(statement *core.BlockStatement) {
-	v.executeBlock(statement, NewEnvironment(v.env))
+	v.executeBlock(statement.Statements, NewEnvironment(v.env))
 }
 
-func (v *Interpreter) executeBlock(statement *core.BlockStatement, env *Environment) {
+func (v *Interpreter) executeBlock(statements []core.Statement, env *Environment) {
 	previousEnv := v.env
 	v.env = env
-	for _, stmt := range statement.Statements {
+	for _, stmt := range statements {
 		v.Interpret(stmt)
 	}
 

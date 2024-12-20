@@ -10,7 +10,7 @@ type CallExpression struct {
 
 var _ Expression = (*CallExpression)(nil)
 
-func (expr *CallExpression) Type() ExpressionType { return GROUPING }
+func (expr *CallExpression) Type() ExpressionType { return CALL }
 
 func (expr *CallExpression) Accept(visitor ExprVisitor) interface{} {
 	return visitor.VisitCallExpr(expr)

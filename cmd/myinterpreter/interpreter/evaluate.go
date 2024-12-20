@@ -27,6 +27,12 @@ func (v *Interpreter) VisitCallExpr(expr *core.CallExpression) interface{} {
 		if val.Name.Lexeme == "clock" {
 			return v.nativeCall()
 		}
+		if err, fun := v.env.GetKey(val.Name.Lexeme); err != nil {
+			v.raiseError("No func")
+		} else {
+			v.funCall(fun)
+		}
+
 	}
 	return 0
 }
@@ -35,6 +41,12 @@ func (v *Interpreter) nativeCall() interface{} {
 	now := time.Now() // current local time
 	sec := now.Unix() // number of seconds since January 1, 1970 UTC
 	return float64(sec)
+}
+
+func (v *Interpreter) funCall(fun interface{}) interface{} {
+
+	v.executeBlock(fun.(*core.FuncStatement).Body, NewEnvironment(v.env))
+	return nil
 }
 
 func (v *Interpreter) VisitLogicalExpr(expr *core.LogicalExpression) interface{} {
@@ -80,6 +92,9 @@ func (v *Interpreter) VisitVarExpr(expr *core.VarExpression) interface{} {
 	env := v.env
 	for env != nil {
 		if err, value := env.GetKey(expr.Name.Lexeme); err == nil {
+			if fun, ok := value.(*core.FuncStatement); ok {
+				return fmt.Sprintf("<fn %s>", fun.Name.Lexeme)
+			}
 			return value
 		}
 		env = env.Enclosing

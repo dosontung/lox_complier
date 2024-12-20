@@ -10,7 +10,11 @@ import (
 
 /*
 program        → declaration * EOF ;
-declaration    → varDecl | statement ;
+declaration    → funDecl
+               | varDecl
+               | statement ;
+funDecl        → "fun" function ;
+function       → IDENTIFIER "(" parameters? ")" block ;
 varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ;
 statement      → exprStmt
                | forStmt
@@ -156,11 +160,26 @@ func (parser *Parser) declaration() core.Statement {
 		}
 		//TODO:  Error at here ????
 		return nil
-
+	case parser.match(tokenize.FUN):
+		return parser.function()
 	default:
 		return parser.statement()
 	}
 	return nil
+}
+
+func (parser *Parser) function() core.Statement {
+	parser.mustMatch(tokenize.IDENTIFIER, "Expected IDENTIFIER.")
+	funcName := parser.previousToken()
+	parser.mustMatch(tokenize.LEFT_PAREN, "Expected '('.")
+	params := make([]*tokenize.Token, 0)
+	for !parser.check(tokenize.RIGHT_PAREN) {
+		if parser.mustMatch(tokenize.IDENTIFIER, "Expected IDENTIFIER.") {
+			params = append(params, parser.previousToken())
+		}
+	}
+	parser.mustMatch(tokenize.RIGHT_PAREN, "Expected '('.")
+	return &core.FuncStatement{Name: funcName, Params: params, Body: parser.block().(*core.BlockStatement).Statements}
 }
 
 func (parser *Parser) statement() core.Statement {
@@ -168,7 +187,7 @@ func (parser *Parser) statement() core.Statement {
 	switch {
 	case parser.match(tokenize.PRINT):
 		stmt = &core.PrintStatement{Expr: parser.expression()}
-	case parser.match(tokenize.LEFT_BRACE):
+	case parser.check(tokenize.LEFT_BRACE):
 		//fmt.Println("GOOOG")
 		blockStmt := parser.block()
 		return blockStmt
@@ -240,6 +259,7 @@ func (parser *Parser) ifStatement() core.Statement {
 
 func (parser *Parser) block() core.Statement {
 	blocks := make([]core.Statement, 0)
+	parser.mustMatch(tokenize.LEFT_BRACE, "Expected '{'.")
 	for !parser.check(tokenize.RIGHT_BRACE) && !parser.isEnd() {
 		declaration := parser.declaration()
 		blocks = append(blocks, declaration)

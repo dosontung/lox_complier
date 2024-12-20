@@ -26,6 +26,7 @@ const (
 const (
 	PRINT           StatementType = "PRINT"
 	EXPRESSION      StatementType = "EXPRESSION"
+	FUNC            StatementType = "FUNC"
 	VAR_DECLARATION StatementType = "VAR_DECLARATION"
 	BLOCK           StatementType = "BLOCK"
 	IF_ELSE         StatementType = "IF_ELSE"
@@ -62,4 +63,5 @@ type StatementVisitor interface {
 	VisitIfElseStmt(statement *IFElseStatement)
 	VisitWhileStmt(statement *WhileStatement)
 	VisitForStmt(statement *ForStatement)
+	VisitFuncStmt(statement *FuncStatement)
 }
