@@ -177,6 +177,10 @@ func (parser *Parser) function() core.Statement {
 		if parser.mustMatch(tokenize.IDENTIFIER, "Expected IDENTIFIER.") {
 			params = append(params, parser.previousToken())
 		}
+		if !parser.match(tokenize.COMMA) {
+			break
+		}
+
 	}
 	parser.mustMatch(tokenize.RIGHT_PAREN, "Expected '('.")
 	return &core.FuncStatement{Name: funcName, Params: params, Body: parser.block().(*core.BlockStatement).Statements}

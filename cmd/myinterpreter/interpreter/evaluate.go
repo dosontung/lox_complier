@@ -30,7 +30,10 @@ func (v *Interpreter) VisitCallExpr(expr *core.CallExpression) interface{} {
 		if err, fun := v.env.GetKey(val.Name.Lexeme); err != nil {
 			v.raiseError("No func")
 		} else {
-			v.funCall(fun)
+			if len(expr.Params) != len(fun.(*core.FuncStatement).Params) {
+				v.raiseError("Wrong number of parameters")
+			}
+			v.funCall(fun, expr.Params)
 		}
 
 	}
@@ -43,9 +46,13 @@ func (v *Interpreter) nativeCall() interface{} {
 	return float64(sec)
 }
 
-func (v *Interpreter) funCall(fun interface{}) interface{} {
-
-	v.executeBlock(fun.(*core.FuncStatement).Body, NewEnvironment(v.env))
+func (v *Interpreter) funCall(fun interface{}, params []core.Expression) interface{} {
+	fun_ := fun.(*core.FuncStatement)
+	funEnv := NewEnvironment(v.env)
+	for i, param := range params {
+		funEnv.SetKey(fun_.Params[i].Lexeme, v.Evaluate(param))
+	}
+	v.executeBlock(fun_.Body, funEnv)
 	return nil
 }
 

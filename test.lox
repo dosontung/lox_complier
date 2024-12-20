@@ -1,4 +1,2 @@
-fun foo() {
-  print 7;
-}
-foo();
+fun foo(a) { print a; }
+foo(10);
