@@ -32,6 +32,7 @@ const (
 	IF_ELSE         StatementType = "IF_ELSE"
 	WHILE           StatementType = "WHILE"
 	FOR             StatementType = "FOR"
+	RETURN          StatementType = "RETURN"
 )
 
 type Expression interface {
@@ -64,4 +65,5 @@ type StatementVisitor interface {
 	VisitWhileStmt(statement *WhileStatement)
 	VisitForStmt(statement *ForStatement)
 	VisitFuncStmt(statement *FuncStatement)
+	VisitReturnStmt(statement *ReturnStatement)
 }

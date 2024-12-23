@@ -66,7 +66,7 @@ func (v *VisitorImpl) VisitUnaryExpr(expr *core.UnaryExpression) interface{} {
 }
 
 func (v *VisitorImpl) VisitVarExpr(expr *core.VarExpression) interface{} {
-	err, i := v.env.GetKey(expr.Name.Lexeme)
+	i, err := v.env.GetKey(expr.Name.Lexeme)
 	if err != nil {
 		return nil
 	}

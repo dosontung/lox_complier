@@ -7,16 +7,22 @@ import (
 
 var _ core.StatementVisitor = (*Interpreter)(nil)
 
-func (v *Interpreter) VisitFuncStmt(statement *core.FuncStatement) {
-	env := v.env
-	for env != nil {
-		if err, _ := env.GetKey(statement.Name.Lexeme); err != nil {
-			env.SetKey(statement.Name.Lexeme, statement)
-		} else {
-			v.raiseError("Duplicate name!")
-		}
-		env = env.Enclosing
+func (v *Interpreter) VisitReturnStmt(statement *core.ReturnStatement) {
+	if statement.Expr == nil {
+		v.SetKey("Return", nil, false)
+		return
 	}
+	retunVal := v.Evaluate(statement.Expr)
+	v.SetKey("Return", retunVal, false)
+}
+
+func (v *Interpreter) VisitFuncStmt(statement *core.FuncStatement) {
+	if _, err := v.GetKey(statement.Name.Lexeme); err != nil {
+		v.SetKey(statement.Name.Lexeme, statement, false)
+	} else {
+		v.raiseError("Duplicate name!")
+	}
+
 }
 
 func (v *Interpreter) VisitForStmt(statement *core.ForStatement) {
@@ -28,13 +34,21 @@ func (v *Interpreter) VisitForStmt(statement *core.ForStatement) {
 		if statement.Expr2 != nil {
 			v.Evaluate(statement.Expr2)
 		}
-
+		// Break when get return in func
+		if _, err := v.GetKey("Return"); err == nil {
+			return
+		}
 	}
 }
 
 func (v *Interpreter) VisitWhileStmt(statement *core.WhileStatement) {
 	for v.isTrue(v.Evaluate(statement.Expr)) {
 		v.Interpret(statement.Body)
+		// Break when get return in func
+		if _, err := v.GetKey("Return"); err == nil {
+			return
+		}
+
 	}
 }
 
@@ -65,22 +79,17 @@ func (v *Interpreter) executeBlock(statements []core.Statement, env *Environment
 	v.env = env
 	for _, stmt := range statements {
 		v.Interpret(stmt)
+		if _, err := v.GetKey("Return"); err == nil {
+			break
+		}
 	}
-
 	v.env = previousEnv
 }
 
 func (v *Interpreter) VisitVarDeclarationStmt(statement *core.VarDeclarationStatement) {
-	//if statement.Expr != nil {
 	value := v.Evaluate(statement.Expr)
-	v.env.SetKey(statement.Name.Lexeme, value)
+	v.SetKey(statement.Name.Lexeme, value, false)
 	return
-	//}
-	//if v.env.Enclosing == nil {
-	//	v.env.SetKey(statement.Name.Lexeme, nil)
-	//} else {
-	//	v.env.Enclosing.SetKey(statement.Name.Lexeme, nil)
-	//}
 
 }
 

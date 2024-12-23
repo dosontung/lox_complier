@@ -27,13 +27,13 @@ func (v *Interpreter) VisitCallExpr(expr *core.CallExpression) interface{} {
 		if val.Name.Lexeme == "clock" {
 			return v.nativeCall()
 		}
-		if err, fun := v.env.GetKey(val.Name.Lexeme); err != nil {
+		if fun, err := v.GetKey(val.Name.Lexeme); err != nil {
 			v.raiseError("No func")
 		} else {
 			if len(expr.Params) != len(fun.(*core.FuncStatement).Params) {
 				v.raiseError("Wrong number of parameters")
 			}
-			v.funCall(fun, expr.Params)
+			return v.funCall(fun, expr.Params)
 		}
 
 	}
@@ -53,7 +53,11 @@ func (v *Interpreter) funCall(fun interface{}, params []core.Expression) interfa
 		funEnv.SetKey(fun_.Params[i].Lexeme, v.Evaluate(param))
 	}
 	v.executeBlock(fun_.Body, funEnv)
-	return nil
+	if val, err := funEnv.GetKey("Return"); err == nil {
+		return val
+	}
+
+	return "nil"
 }
 
 func (v *Interpreter) VisitLogicalExpr(expr *core.LogicalExpression) interface{} {
@@ -82,29 +86,20 @@ func (v *Interpreter) isTrue(vl interface{}) bool {
 }
 func (v *Interpreter) VisitAssignExpr(expr *core.AssignExpression) interface{} {
 	value := v.Evaluate(expr.Expr)
-	env := v.env
-	for env != nil {
-		if err, _ := env.GetKey(expr.Name.Lexeme); err == nil {
-			env.SetKey(expr.Name.Lexeme, value)
-			return value
-		}
-		env = env.Enclosing
+	if _, err := v.SetKey(expr.Name.Lexeme, value, true); err == nil {
+		return value
 	}
-	os.Exit(70)
+	v.raiseError("No variable!")
 	return value
 }
 
 func (v *Interpreter) VisitVarExpr(expr *core.VarExpression) interface{} {
 	var i interface{}
-	env := v.env
-	for env != nil {
-		if err, value := env.GetKey(expr.Name.Lexeme); err == nil {
-			if fun, ok := value.(*core.FuncStatement); ok {
-				return fmt.Sprintf("<fn %s>", fun.Name.Lexeme)
-			}
-			return value
+	if value, err := v.GetKey(expr.Name.Lexeme); err == nil {
+		if fun, ok := value.(*core.FuncStatement); ok {
+			return fmt.Sprintf("<fn %s>", fun.Name.Lexeme)
 		}
-		env = env.Enclosing
+		return value
 	}
 
 	v.raiseError(errors.UndefinedVar, fmt.Sprintf(" '%s'.", expr.Name.Lexeme))
@@ -112,8 +107,8 @@ func (v *Interpreter) VisitVarExpr(expr *core.VarExpression) interface{} {
 }
 
 func (v *Interpreter) VisitBinaryExpr(expr *core.BinaryExpression) interface{} {
-	rightVal := expr.Right.Accept(v)
-	leftVal := expr.Left.Accept(v)
+	rightVal := v.Evaluate(expr.Right)
+	leftVal := v.Evaluate(expr.Left)
 	sameType, isNumber := false, false
 	if reflect.TypeOf(leftVal) == reflect.TypeOf(rightVal) {
 		sameType = true

@@ -22,7 +22,9 @@ statement      → exprStmt
                | printStmt
                | whileStmt
                | block ;
+               | returnStmt;
 
+returnStmt     → "return" expression? ";" ;
 forStmt        → "for" "(" ( varDecl | exprStmt | ";" )
                  expression? ";"
                  expression? ")" statement ;
@@ -201,6 +203,8 @@ func (parser *Parser) statement() core.Statement {
 		return parser.while()
 	case parser.match(tokenize.FOR):
 		return parser.forstmt()
+	case parser.match(tokenize.RETURN):
+		return parser.returnStmt()
 	default:
 		stmt = &core.ExpressionStatement{Expr: parser.expression()}
 	}
@@ -210,7 +214,14 @@ func (parser *Parser) statement() core.Statement {
 	return nil
 
 }
-
+func (parser *Parser) returnStmt() core.Statement {
+	if parser.match(tokenize.SEMICOLON) {
+		return &core.ReturnStatement{}
+	}
+	stmt := &core.ReturnStatement{Expr: parser.expression()}
+	parser.mustMatch(tokenize.SEMICOLON, "Expected ';'.")
+	return stmt
+}
 func (parser *Parser) forstmt() core.Statement {
 	parser.mustMatch(tokenize.LEFT_PAREN, "Expected \"(\".")
 	var var_statement core.Statement
