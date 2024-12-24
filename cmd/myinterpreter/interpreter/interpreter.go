@@ -16,8 +16,8 @@ func (v *Interpreter) SetKey(key string, val interface{}, assign bool) (interfac
 	env := v.env
 	if assign == false {
 		env.SetKey(key, val)
+		return val, nil
 	}
-
 	for env != nil {
 		if _, err := env.GetKey(key); err == nil {
 			env.SetKey(key, val)

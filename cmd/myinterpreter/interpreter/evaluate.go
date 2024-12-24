@@ -23,21 +23,33 @@ func (v *Interpreter) raiseError(err errors.CError, etcs ...string) {
 }
 func (v *Interpreter) VisitCallExpr(expr *core.CallExpression) interface{} {
 	callee := expr.Callee
-	if val, ok := callee.(*core.VarExpression); ok {
-		if val.Name.Lexeme == "clock" {
-			return v.nativeCall()
+	var callName interface{}
+	switch callee.Type() {
+	case core.VARIABLE:
+		callName = callee.(*core.VarExpression).Name.Lexeme
+	case core.CALL:
+		callName = v.funCall(v.Evaluate(callee.(*core.CallExpression).Callee), callee.(*core.CallExpression).Params)
+		if _, ok := callName.(*core.FuncStatement); ok {
+			callName = callName.(*core.FuncStatement).Name.Lexeme
 		}
-		if fun, err := v.GetKey(val.Name.Lexeme); err != nil {
-			v.raiseError("No func")
-		} else {
-			if len(expr.Params) != len(fun.(*core.FuncStatement).Params) {
-				v.raiseError("Wrong number of parameters")
-			}
-			return v.funCall(fun, expr.Params)
-		}
-
+	default:
+		v.raiseError("Unknown Call Expression")
 	}
-	return 0
+	if callName == "clock" {
+		return v.nativeCall()
+	}
+	if fun, err := v.GetKey(callName.(string)); err != nil {
+		v.raiseError("No func")
+	} else {
+		if len(expr.Params) != len(fun.(*core.FuncStatement).Params) {
+			v.raiseError("Wrong number of parameters")
+		}
+		rs := v.funCall(fun, expr.Params)
+		return rs
+	}
+
+	v.raiseError("Wrong call expression: ????")
+	return nil
 }
 
 func (v *Interpreter) nativeCall() interface{} {
@@ -48,7 +60,7 @@ func (v *Interpreter) nativeCall() interface{} {
 
 func (v *Interpreter) funCall(fun interface{}, params []core.Expression) interface{} {
 	fun_ := fun.(*core.FuncStatement)
-	funEnv := NewEnvironment(v.env)
+	funEnv := NewEnvironment(fun_.LocalVar.(*Environment))
 	for i, param := range params {
 		funEnv.SetKey(fun_.Params[i].Lexeme, v.Evaluate(param))
 	}
@@ -97,11 +109,10 @@ func (v *Interpreter) VisitVarExpr(expr *core.VarExpression) interface{} {
 	var i interface{}
 	if value, err := v.GetKey(expr.Name.Lexeme); err == nil {
 		if fun, ok := value.(*core.FuncStatement); ok {
-			return fmt.Sprintf("<fn %s>", fun.Name.Lexeme)
+			return fun
 		}
 		return value
 	}
-
 	v.raiseError(errors.UndefinedVar, fmt.Sprintf(" '%s'.", expr.Name.Lexeme))
 	return i
 }

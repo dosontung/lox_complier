@@ -1,6 +1,7 @@
 package interpreter
 
 import (
+	"errors"
 	"fmt"
 	"github.com/codecrafters-io/interpreter-starter-go/cmd/myinterpreter/core"
 )
@@ -18,7 +19,13 @@ func (v *Interpreter) VisitReturnStmt(statement *core.ReturnStatement) {
 
 func (v *Interpreter) VisitFuncStmt(statement *core.FuncStatement) {
 	if _, err := v.GetKey(statement.Name.Lexeme); err != nil {
-		v.SetKey(statement.Name.Lexeme, statement, false)
+		funClone := statement.Clone()
+		funClone.SetLocalVar(v.env)
+		v.SetKey(statement.Name.Lexeme, funClone, false)
+		//if statement.Name.Lexeme == "filter" {
+		//	fmt.Printf("filter env %p\n", v.env)
+		//	fmt.Printf("filter env %v\n", v.env)
+		//}
 	} else {
 		v.raiseError("Duplicate name!")
 	}
@@ -71,19 +78,24 @@ func (v *Interpreter) VisitIfElseStmt(statement *core.IFElseStatement) {
 }
 
 func (v *Interpreter) VisitBlockStmt(statement *core.BlockStatement) {
-	v.executeBlock(statement.Statements, NewEnvironment(v.env))
+	if ret, ok := v.executeBlock(statement.Statements, NewEnvironment(v.env)); ok != nil {
+		v.SetKey("Return", ret, false)
+	}
 }
 
-func (v *Interpreter) executeBlock(statements []core.Statement, env *Environment) {
+func (v *Interpreter) executeBlock(statements []core.Statement, env *Environment) (interface{}, error) {
 	previousEnv := v.env
 	v.env = env
+	defer func() { v.env = previousEnv }()
 	for _, stmt := range statements {
 		v.Interpret(stmt)
-		if _, err := v.GetKey("Return"); err == nil {
-			break
+		if pushReturn, err := v.GetKey("Return"); err == nil {
+			//previousEnv.SetKey("Return", pushReturn)
+			return pushReturn, errors.New("return statement detected")
 		}
 	}
-	v.env = previousEnv
+	//v.env = previousEnv
+	return nil, nil
 }
 
 func (v *Interpreter) VisitVarDeclarationStmt(statement *core.VarDeclarationStatement) {
@@ -99,7 +111,11 @@ func (v *Interpreter) VisitExpressionStmt(statement *core.ExpressionStatement) {
 
 func (v *Interpreter) VisitPrintStmt(statement *core.PrintStatement) interface{} {
 	value := v.Evaluate(statement.Expr)
-	fmt.Println(value)
+	if fun, ok := value.(*core.FuncStatement); ok {
+		fmt.Printf("<fn %s>\n", fun.Name.Lexeme)
+	} else {
+		fmt.Println(value)
+	}
 	return value
 }
 

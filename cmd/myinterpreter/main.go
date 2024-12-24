@@ -56,7 +56,7 @@ func main() {
 			fmt.Fprintln(os.Stderr, prs.Error())
 			os.Exit(65)
 		}
-		
+
 		fmt.Println(expression.Accept(visitorImp).(string))
 
 	}

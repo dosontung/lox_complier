@@ -194,7 +194,6 @@ func (parser *Parser) statement() core.Statement {
 	case parser.match(tokenize.PRINT):
 		stmt = &core.PrintStatement{Expr: parser.expression()}
 	case parser.check(tokenize.LEFT_BRACE):
-		//fmt.Println("GOOOG")
 		blockStmt := parser.block()
 		return blockStmt
 	case parser.match(tokenize.IF):
@@ -218,7 +217,8 @@ func (parser *Parser) returnStmt() core.Statement {
 	if parser.match(tokenize.SEMICOLON) {
 		return &core.ReturnStatement{}
 	}
-	stmt := &core.ReturnStatement{Expr: parser.expression()}
+	x := parser.expression()
+	stmt := &core.ReturnStatement{Expr: x}
 	parser.mustMatch(tokenize.SEMICOLON, "Expected ';'.")
 	return stmt
 }
@@ -379,10 +379,10 @@ func (parser *Parser) unary() core.Expression {
 
 func (parser *Parser) call() core.Expression {
 	callee := parser.primary()
-	if parser.match(tokenize.LEFT_PAREN) {
+	for parser.match(tokenize.LEFT_PAREN) {
 		params := parser.arguments()
 		parser.mustMatch(tokenize.RIGHT_PAREN, "Expected )")
-		return &core.CallExpression{Callee: callee, Params: params}
+		callee = &core.CallExpression{Callee: callee, Params: params}
 	}
 	return callee
 }
