@@ -1,26 +1,13 @@
-fun makeFilter(min) {
-  fun filter(n) {
-    if (n < min) {return false;}
- 
-    return true;
+fun makeCounter() {
+  var i = 0;
+  fun count() {
+    i = i + 5;
+    print i;
   }
-  return filter;
+
+  return count;
 }
 
-// This function applies a function to a list of numbers
-fun applyToNumbers(f, count) {
-  var n = 0;
-  while (n < count) {
-    if (f(n)) {
-     print n;
-    }
-    n = n + 1;
-  }
-}
-
-var greaterThanX = makeFilter(55);
-var greaterThanY = makeFilter(10);
-
-print "Numbers >= 55:";
-applyToNumbers(greaterThanX, 55 + 5);
-
+var counter = makeCounter();
+counter();
+counter();

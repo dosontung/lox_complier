@@ -89,8 +89,7 @@ func (v *Interpreter) executeBlock(statements []core.Statement, env *Environment
 	defer func() { v.env = previousEnv }()
 	for _, stmt := range statements {
 		v.Interpret(stmt)
-		if pushReturn, err := v.GetKey("Return"); err == nil {
-			//previousEnv.SetKey("Return", pushReturn)
+		if pushReturn, err := v.env.GetKey("Return"); err == nil {
 			return pushReturn, errors.New("return statement detected")
 		}
 	}
